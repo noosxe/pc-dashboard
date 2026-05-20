@@ -2,10 +2,10 @@ package com.noosxe.pc_dashboard.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.noosxe.pc_dashboard.data.MockPcRepository
 import com.noosxe.pc_dashboard.data.PcRepository
 import com.noosxe.pc_dashboard.data.PcStats
 import com.noosxe.pc_dashboard.data.SettingsRepository
+import com.noosxe.pc_dashboard.data.WebSocketPcRepository
 import com.noosxe.pc_dashboard.ui.theme.AppTheme
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class DashboardViewModel(
-    private val pcRepository: PcRepository = MockPcRepository(),
+    private val pcRepository: PcRepository = WebSocketPcRepository(),
     private val settingsRepository: SettingsRepository = SettingsRepository()
 ) : ViewModel() {
 
