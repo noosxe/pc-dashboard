@@ -32,6 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -49,16 +51,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         enableEdgeToEdge()
-        
-        // Hide system bars for immersive full screen
-        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-        windowInsetsController.systemBarsBehavior = 
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
 
         setContent {
             val viewModel: DashboardViewModel = viewModel()
             val currentTheme by viewModel.theme.collectAsStateWithLifecycle()
+            
+            val view = LocalView.current
+            if (!view.isInEditMode) {
+                LaunchedEffect(view) {
+                    val window = (view.context as ComponentActivity).window
+                    val windowInsetsController = WindowCompat.getInsetsController(window, view)
+                    windowInsetsController.systemBarsBehavior =
+                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+                }
+            }
 
             PCDashboardTheme(appTheme = currentTheme) {
                 Surface(
