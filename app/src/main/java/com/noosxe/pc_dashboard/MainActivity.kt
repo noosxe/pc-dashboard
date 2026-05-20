@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,10 +30,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -45,6 +50,10 @@ import androidx.navigation.compose.rememberNavController
 import com.noosxe.pc_dashboard.ui.dashboard.DashboardViewModel
 import com.noosxe.pc_dashboard.ui.theme.AppTheme
 import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
+import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,8 +116,13 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("PC Dashboard") },
+            CenterAlignedTopAppBar(
+                title = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        DigitalClock()
+                        Text("PC Dashboard", style = MaterialTheme.typography.labelSmall)
+                    }
+                },
                 actions = {
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
@@ -200,6 +214,25 @@ fun SettingsScreen(
             }
         }
     }
+}
+
+@Composable
+fun DigitalClock(modifier: Modifier = Modifier) {
+    var time by remember { mutableStateOf(System.currentTimeMillis()) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            time = System.currentTimeMillis()
+            delay(1000)
+        }
+    }
+
+    val formatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
+    Text(
+        text = formatter.format(Date(time)),
+        style = MaterialTheme.typography.titleLarge,
+        modifier = modifier
+    )
 }
 
 @Composable
