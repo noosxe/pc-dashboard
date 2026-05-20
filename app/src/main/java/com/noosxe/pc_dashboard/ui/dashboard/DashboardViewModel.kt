@@ -1,0 +1,34 @@
+package com.noosxe.pc_dashboard.ui.dashboard
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.noosxe.pc_dashboard.data.MockPcRepository
+import com.noosxe.pc_dashboard.data.PcRepository
+import com.noosxe.pc_dashboard.data.PcStats
+import com.noosxe.pc_dashboard.data.SettingsRepository
+import com.noosxe.pc_dashboard.ui.theme.AppTheme
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+class DashboardViewModel(
+    private val pcRepository: PcRepository = MockPcRepository(),
+    private val settingsRepository: SettingsRepository = SettingsRepository()
+) : ViewModel() {
+
+    val uiState: StateFlow<PcStats> = pcRepository.getPcStatsFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = PcStats()
+        )
+
+    val theme: StateFlow<AppTheme> = settingsRepository.theme
+
+    fun setTheme(theme: AppTheme) {
+        viewModelScope.launch {
+            settingsRepository.setTheme(theme)
+        }
+    }
+}
