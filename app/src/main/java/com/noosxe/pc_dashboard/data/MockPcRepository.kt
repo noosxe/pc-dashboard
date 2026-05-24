@@ -20,4 +20,25 @@ class MockPcRepository : PcRepository {
             delay(1000) // Update every second
         }
     }
+
+    override fun getNotificationsFlow(): Flow<PcNotification> = flow {
+        delay(5000) // Wait 5 seconds before first notification
+        emit(
+            PcNotification(
+                appName = "Slack",
+                summary = "New message from Alice",
+                body = "Hey, are you free for a call?",
+                timestamp = System.currentTimeMillis() / 1000
+            )
+        )
+        delay(10000)
+        emit(
+            PcNotification(
+                appName = "System",
+                summary = "Update available",
+                body = "A new system update is ready to install.",
+                timestamp = System.currentTimeMillis() / 1000
+            )
+        )
+    }
 }

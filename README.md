@@ -41,3 +41,7 @@ PCDashboard supports the following themes:
 3. Build and run the `app` module on an Android device or emulator.
 
 Currently, the app uses a `MockPcRepository` to simulate real-time data. Future versions will integrate with a PC-side agent to fetch actual system statistics.
+
+## Roadmap
+
+- **Full Notification Action Support**: Add UI and backend support for interacting with notification actions (e.g., buttons, replies).

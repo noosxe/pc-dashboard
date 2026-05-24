@@ -3,6 +3,7 @@ package com.noosxe.pc_dashboard
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -39,11 +40,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -52,6 +56,7 @@ import com.noosxe.pc_dashboard.ui.dashboard.DashboardViewModel
 import com.noosxe.pc_dashboard.ui.theme.AppTheme
 import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -105,6 +110,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PCDashboardApp(viewModel: DashboardViewModel) {
     val navController = rememberNavController()
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel.notifications) {
+        viewModel.notifications.collectLatest { notification ->
+            Toast.makeText(
+                context,
+                "${notification.appName}: ${notification.summary}\n${notification.body}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
     
     NavHost(navController = navController, startDestination = "dashboard") {
         composable("dashboard") {
