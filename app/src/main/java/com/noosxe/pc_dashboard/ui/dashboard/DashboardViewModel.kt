@@ -29,6 +29,13 @@ class DashboardViewModel(
 
     val theme: StateFlow<AppTheme> = settingsRepository.theme
 
+    val isLocked: StateFlow<Boolean> = pcRepository.getSessionLockFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     val notifications: Flow<PcNotification> = pcRepository.getNotificationsFlow()
 
     fun setTheme(theme: AppTheme) {

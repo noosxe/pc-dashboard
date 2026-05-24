@@ -45,4 +45,11 @@ class MockPcRepository : PcRepository {
             )
         )
     }
+
+    override fun getSessionLockFlow(): Flow<Boolean> = flow {
+        while (true) {
+            emit(false)
+            delay(1000000) // Effectively disabled for production mock
+        }
+    }
 }

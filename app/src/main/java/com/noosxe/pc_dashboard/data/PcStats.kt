@@ -56,6 +56,19 @@ data class NotificationMessage(
 ) : ServerMessage()
 
 @Serializable
+@SerialName("session_lock")
+data class SessionLockMessage(
+    override val type: String,
+    override val timestamp: Long,
+    val data: SessionLockDataDto
+) : ServerMessage()
+
+@Serializable
+data class SessionLockDataDto(
+    val locked: Boolean
+)
+
+@Serializable
 data class TelemetryData(
     val cpu: CpuStatsDto,
     val gpu: GpuStatsDto,
@@ -98,6 +111,7 @@ data class NotificationDataDto(
 object ServerMessageSerializer : JsonContentPolymorphicSerializer<ServerMessage>(ServerMessage::class) {
     override fun selectDeserializer(element: JsonElement) = when (element.jsonObject["type"]?.jsonPrimitive?.content) {
         "notification_event" -> NotificationMessage.serializer()
+        "session_lock" -> SessionLockMessage.serializer()
         else -> TelemetryMessage.serializer()
     }
 }

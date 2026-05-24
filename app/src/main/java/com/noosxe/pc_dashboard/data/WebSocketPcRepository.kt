@@ -79,4 +79,8 @@ class WebSocketPcRepository(
     override fun getNotificationsFlow(): Flow<PcNotification> = serverMessageFlow
         .filterIsInstance<NotificationMessage>()
         .map { it.toDomain() }
+
+    override fun getSessionLockFlow(): Flow<Boolean> = serverMessageFlow
+        .filterIsInstance<SessionLockMessage>()
+        .map { it.data.locked }
 }

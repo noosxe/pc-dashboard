@@ -2,6 +2,7 @@ package com.noosxe.pc_dashboard
 
 import com.noosxe.pc_dashboard.data.NotificationMessage
 import com.noosxe.pc_dashboard.data.ServerMessage
+import com.noosxe.pc_dashboard.data.SessionLockMessage
 import com.noosxe.pc_dashboard.data.TelemetryMessage
 import com.noosxe.pc_dashboard.data.toDomain
 import kotlinx.serialization.json.Json
@@ -66,5 +67,23 @@ class NotificationParsingTest {
         assertEquals(45.0f, stats.cpuTemp)
         assertEquals(4.0f, stats.ramUsage)
         assertEquals(16.0f, stats.ramTotal)
+    }
+
+    @Test
+    fun testParseSessionLock() {
+        val input = """
+            {
+              "type": "session_lock",
+              "timestamp": 1716213825,
+              "data": {
+                "locked": true
+              }
+            }
+        """.trimIndent()
+
+        val message = json.decodeFromString<ServerMessage>(input)
+        assertTrue(message is SessionLockMessage)
+        val lockData = (message as SessionLockMessage).data
+        assertTrue(lockData.locked)
     }
 }

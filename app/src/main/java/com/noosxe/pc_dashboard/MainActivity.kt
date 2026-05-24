@@ -83,6 +83,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: DashboardViewModel = viewModel()
             val currentTheme by viewModel.theme.collectAsStateWithLifecycle()
+            val isLocked by viewModel.isLocked.collectAsStateWithLifecycle()
             
             val view = LocalView.current
             if (!view.isInEditMode) {
@@ -93,6 +94,17 @@ class MainActivity : ComponentActivity() {
                         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                     windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
                 }
+
+                LaunchedEffect(isLocked) {
+                    val window = (view.context as ComponentActivity).window
+                    val params = window.attributes
+                    if (isLocked) {
+                        params.screenBrightness = 0.01f
+                    } else {
+                        params.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                    }
+                    window.attributes = params
+                }
             }
 
             PCDashboardTheme(appTheme = currentTheme) {
@@ -100,7 +112,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    PCDashboardApp(viewModel)
+                    if (isLocked) {
+                        LockedScreen()
+                    } else {
+                        PCDashboardApp(viewModel)
+                    }
                 }
             }
         }
@@ -243,6 +259,22 @@ fun SettingsScreen(
                 ) { viewModel.setTheme(theme) }
             }
         }
+    }
+}
+
+@Composable
+fun LockedScreen() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        DigitalClock(modifier = Modifier.padding(16.dp))
+        Text(
+            text = "Host Session Locked",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+        )
     }
 }
 
