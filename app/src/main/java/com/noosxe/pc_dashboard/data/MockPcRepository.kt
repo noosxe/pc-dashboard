@@ -25,18 +25,22 @@ class MockPcRepository : PcRepository {
         delay(5000) // Wait 5 seconds before first notification
         emit(
             PcNotification(
+                id = 1,
                 appName = "Slack",
                 summary = "New message from Alice",
                 body = "Hey, are you free for a call?",
+                actions = listOf("default", "Activate"),
                 timestamp = System.currentTimeMillis() / 1000
             )
         )
         delay(10000)
         emit(
             PcNotification(
+                id = 2,
                 appName = "System",
                 summary = "Update available",
                 body = "A new system update is ready to install.",
+                actions = emptyList(),
                 timestamp = System.currentTimeMillis() / 1000
             )
         )
