@@ -84,6 +84,7 @@ class MainActivity : ComponentActivity() {
             val viewModel: DashboardViewModel = viewModel()
             val currentTheme by viewModel.theme.collectAsStateWithLifecycle()
             val isLocked by viewModel.isLocked.collectAsStateWithLifecycle()
+            val shouldKeepScreenOn by viewModel.shouldKeepScreenOn.collectAsStateWithLifecycle()
             
             val view = LocalView.current
             if (!view.isInEditMode) {
@@ -104,6 +105,15 @@ class MainActivity : ComponentActivity() {
                         params.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
                     }
                     window.attributes = params
+                }
+
+                LaunchedEffect(shouldKeepScreenOn) {
+                    val window = (view.context as ComponentActivity).window
+                    if (shouldKeepScreenOn) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    }
                 }
             }
 
