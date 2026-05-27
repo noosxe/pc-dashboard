@@ -1,12 +1,17 @@
 package com.noosxe.pc_dashboard
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,13 +50,14 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.noosxe.pc_dashboard.service.PcStatsService
 import com.noosxe.pc_dashboard.ui.dashboard.DashboardViewModel
 import com.noosxe.pc_dashboard.ui.theme.AppTheme
 import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
@@ -81,7 +87,38 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val viewModel: DashboardViewModel = viewModel()
+            val repository = (LocalContext.current.applicationContext as PCDashboardApplication).pcRepository
+            val viewModel: DashboardViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return DashboardViewModel(repository) as T
+                    }
+                }
+            )
+
+            // Request notification permission for Foreground Service on Android 13+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val launcher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestPermission()
+                ) { isGranted ->
+                    if (isGranted) {
+                        startPcStatsService()
+                    }
+                }
+                LaunchedEffect(Unit) {
+                    if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        startPcStatsService()
+                    }
+                }
+            } else {
+                LaunchedEffect(Unit) {
+                    startPcStatsService()
+                }
+            }
+
             val currentTheme by viewModel.theme.collectAsStateWithLifecycle()
             val isLocked by viewModel.isLocked.collectAsStateWithLifecycle()
             val shouldKeepScreenOn by viewModel.shouldKeepScreenOn.collectAsStateWithLifecycle()
@@ -129,6 +166,15 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun startPcStatsService() {
+        val intent = Intent(this, PcStatsService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
         }
     }
 }
@@ -349,7 +395,13 @@ fun MemoryCard(title: String, usage: Float, total: Float, modifier: Modifier = M
 fun DashboardPreview() {
     PCDashboardTheme {
         DashboardScreen(
-            viewModel = viewModel(),
+            viewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return DashboardViewModel(com.noosxe.pc_dashboard.data.MockPcRepository()) as T
+                    }
+                }
+            ),
         ) {}
     }
 }

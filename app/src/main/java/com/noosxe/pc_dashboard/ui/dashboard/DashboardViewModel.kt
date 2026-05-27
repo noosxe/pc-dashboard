@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class DashboardViewModel(
-    private val pcRepository: PcRepository = WebSocketPcRepository(),
+    private val pcRepository: PcRepository,
     private val settingsRepository: SettingsRepository = SettingsRepository()
 ) : ViewModel() {
 
