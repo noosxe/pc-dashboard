@@ -24,7 +24,7 @@ import okhttp3.WebSocketListener
 
 class WebSocketPcRepository(
     private val client: OkHttpClient = OkHttpClient(),
-    private val wsUrl: String = "ws://localhost:12345/ws"
+    private val wsUrl: String = "ws://127.0.0.1:12345/ws"
 ) : PcRepository {
 
     private val json = Json { ignoreUnknownKeys = true }

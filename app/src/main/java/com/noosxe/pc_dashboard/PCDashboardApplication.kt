@@ -20,7 +20,7 @@ class PCDashboardApplication : Application() {
             .readTimeout(0, TimeUnit.SECONDS) // For WebSockets
             .build()
 
-        // Replace with your actual server URL if different
-        pcRepository = WebSocketPcRepository(client = client, wsUrl = "ws://192.168.1.10:12345/ws")
+        // Use the fixed local loopback address for the WebSocket server
+        pcRepository = WebSocketPcRepository(client = client, wsUrl = "ws://127.0.0.1:12345/ws")
     }
 }
