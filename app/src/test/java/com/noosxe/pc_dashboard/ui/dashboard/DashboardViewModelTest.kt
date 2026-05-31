@@ -92,6 +92,7 @@ class DashboardViewModelTest {
         override fun getNotificationsFlow(): Flow<PcNotification> = MutableSharedFlow()
         override fun getSessionLockFlow(): Flow<Boolean> = sessionLockFlow
         override fun getMediaStateFlow(): Flow<MediaState> = mediaStateFlow
+        override fun getCommandResponsesFlow(): Flow<String> = flowOf()
         override fun sendMediaCommand(player: String, command: String) {}
     }
 }

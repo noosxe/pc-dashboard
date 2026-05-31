@@ -99,9 +99,9 @@ class WebSocketPcRepository(
     override fun getMediaStateFlow(): Flow<MediaState> = serverMessageFlow
         .filterIsInstance<MediaMessage>()
         .map { 
-            val firstPlayer = it.data.activePlayers.firstOrNull()
-            Log.d("WebSocketPcRepo", "Received MPRIS message: player=${firstPlayer?.playerName}, title=${firstPlayer?.metadata?.title}, status=${firstPlayer?.playbackStatus}")
-            it.toDomain() 
+            val domain = it.toDomain()
+            // Ensure stable order by sorting players by their ID (player name)
+            domain.copy(players = domain.players.sortedBy { p -> p.player })
         }
 
     override fun getCommandResponsesFlow(): Flow<String> = serverMessageFlow

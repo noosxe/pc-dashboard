@@ -349,15 +349,50 @@ fun MediaPager(viewModel: DashboardViewModel) {
     } else {
         val pagerState = rememberPagerState(pageCount = { mediaState.players.size })
         
+        // Track the player we're currently looking at to maintain stability across list updates
+        var lastSeenPlayerId by remember { mutableStateOf<String?>(null) }
+        
+        // Update lastSeenPlayerId when the page changes (e.g., user swipe)
+        LaunchedEffect(pagerState.currentPage) {
+            if (mediaState.players.isNotEmpty() && pagerState.currentPage < mediaState.players.size) {
+                lastSeenPlayerId = mediaState.players[pagerState.currentPage].player
+            }
+        }
+        
+        // When the list of players changes, ensure the pager stays on the same player
+        LaunchedEffect(mediaState.players) {
+            if (pagerState.isScrollInProgress) return@LaunchedEffect
+
+            val targetIndex = mediaState.players.indexOfFirst { it.player == lastSeenPlayerId }
+            if (targetIndex != -1) {
+                // If the player we're watching moved, follow it
+                if (targetIndex != pagerState.currentPage) {
+                    pagerState.scrollToPage(targetIndex)
+                }
+            } else if (mediaState.players.isNotEmpty()) {
+                // If the player we were watching is gone, or we haven't picked one yet, 
+                // default to the first "Playing" one or just the first one
+                val playingIndex = mediaState.players.indexOfFirst { it.status == "Playing" }
+                val newIndex = if (playingIndex != -1) playingIndex else 0
+                lastSeenPlayerId = mediaState.players[newIndex].player
+                pagerState.scrollToPage(newIndex)
+            }
+        }
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxWidth(),
-            pageSpacing = 8.dp
+            pageSpacing = 8.dp,
+            key = { index -> 
+                if (index < mediaState.players.size) mediaState.players[index].player else index 
+            }
         ) { page ->
-            MediaControlCard(
-                playerState = mediaState.players[page],
-                onCommand = { command -> viewModel.onMediaCommand(mediaState.players[page].player, command) }
-            )
+            if (page < mediaState.players.size) {
+                MediaControlCard(
+                    playerState = mediaState.players[page],
+                    onCommand = { command -> viewModel.onMediaCommand(mediaState.players[page].player, command) }
+                )
+            }
         }
     }
 }
