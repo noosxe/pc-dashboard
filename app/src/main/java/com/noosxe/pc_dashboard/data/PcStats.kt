@@ -21,6 +21,23 @@ data class PcStats(
     val vramTotal: Float = 8f  // GB
 )
 
+data class MediaState(
+    val players: List<PlayerState> = emptyList()
+)
+
+data class PlayerState(
+    val player: String = "",
+    val identity: String = "",
+    val desktopEntry: String = "",
+    val title: String = "",
+    val artist: String = "",
+    val status: String = "Stopped",
+    val positionMs: Long = 0,
+    val lengthMs: Long = 0,
+    val volume: Double = 0.0,
+    val artUrl: String = ""
+)
+
 data class PcNotification(
     val id: Int,
     val appName: String,
@@ -62,6 +79,56 @@ data class SessionLockMessage(
     override val timestamp: Long,
     val data: SessionLockDataDto
 ) : ServerMessage()
+
+@Serializable
+@SerialName("media_state")
+data class MediaMessage(
+    override val type: String,
+    override val timestamp: Long,
+    val data: MediaListDataDto
+) : ServerMessage()
+
+@Serializable
+data class MediaListDataDto(
+    @SerialName("active_players") val activePlayers: List<MediaDataDto>
+)
+
+@Serializable
+data class MediaDataDto(
+    @SerialName("player_name") val playerName: String,
+    val identity: String? = null,
+    @SerialName("desktop_entry") val desktopEntry: String? = null,
+    @SerialName("playback_status") val playbackStatus: String,
+    val volume: Double,
+    @SerialName("position_microseconds") val positionMicroseconds: Long,
+    val metadata: MediaMetadataDto
+)
+
+@Serializable
+data class MediaMetadataDto(
+    @SerialName("track_id") val trackId: String,
+    val title: String,
+    val artist: List<String>,
+    val album: String,
+    @SerialName("art_url") val artUrl: String,
+    @SerialName("length_microseconds") val lengthMicroseconds: Long
+)
+
+@Serializable
+data class MediaActionRequest(
+    val type: String = "media_command",
+    @SerialName("player_name") val playerName: String,
+    val command: String,
+    val args: MediaActionArgsDto? = null
+)
+
+@Serializable
+data class MediaActionArgsDto(
+    @SerialName("offset_microseconds") val offsetMicroseconds: Long? = null,
+    @SerialName("position_microseconds") val positionMicroseconds: Long? = null,
+    @SerialName("track_id") val trackId: String? = null,
+    val volume: Double? = null
+)
 
 @Serializable
 data class SessionLockDataDto(
@@ -112,6 +179,7 @@ object ServerMessageSerializer : JsonContentPolymorphicSerializer<ServerMessage>
     override fun selectDeserializer(element: JsonElement) = when (element.jsonObject["type"]?.jsonPrimitive?.content) {
         "notification_event" -> NotificationMessage.serializer()
         "session_lock" -> SessionLockMessage.serializer()
+        "media_state" -> MediaMessage.serializer()
         else -> TelemetryMessage.serializer()
     }
 }
@@ -142,5 +210,24 @@ fun NotificationMessage.toDomain(): PcNotification {
         body = data.body,
         actions = data.actions,
         timestamp = timestamp
+    )
+}
+
+fun MediaMessage.toDomain(): MediaState {
+    return MediaState(
+        players = data.activePlayers.map { player ->
+            PlayerState(
+                player = player.playerName,
+                identity = player.identity ?: player.playerName,
+                desktopEntry = player.desktopEntry ?: "",
+                title = player.metadata.title,
+                artist = player.metadata.artist.joinToString(", "),
+                status = player.playbackStatus,
+                positionMs = player.positionMicroseconds / 1000,
+                lengthMs = player.metadata.lengthMicroseconds / 1000,
+                volume = player.volume,
+                artUrl = player.metadata.artUrl
+            )
+        }
     )
 }

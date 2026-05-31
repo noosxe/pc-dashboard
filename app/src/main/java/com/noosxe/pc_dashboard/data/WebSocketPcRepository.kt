@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -29,11 +30,16 @@ class WebSocketPcRepository(
 
     private val json = Json { ignoreUnknownKeys = true }
     private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var webSocket: WebSocket? = null
 
     private val serverMessageFlow: Flow<ServerMessage> = callbackFlow {
         val request = Request.Builder().url(wsUrl).build()
         
         val listener = object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                this@WebSocketPcRepository.webSocket = webSocket
+            }
+
             override fun onMessage(webSocket: WebSocket, text: String) {
                 try {
                     val serverMessage = json.decodeFromString<ServerMessage>(text)
@@ -58,6 +64,7 @@ class WebSocketPcRepository(
 
         awaitClose {
             webSocket.close(1000, "Flow closed")
+            this@WebSocketPcRepository.webSocket = null
         }
     }
     .onStart { Log.d("WebSocketPcRepo", "Starting WebSocket flow") }
@@ -83,4 +90,22 @@ class WebSocketPcRepository(
     override fun getSessionLockFlow(): Flow<Boolean> = serverMessageFlow
         .filterIsInstance<SessionLockMessage>()
         .map { it.data.locked }
+
+    override fun getMediaStateFlow(): Flow<MediaState> = serverMessageFlow
+        .filterIsInstance<MediaMessage>()
+        .map { 
+            val firstPlayer = it.data.activePlayers.firstOrNull()
+            Log.d("WebSocketPcRepo", "Received MPRIS message: player=${firstPlayer?.playerName}, title=${firstPlayer?.metadata?.title}, status=${firstPlayer?.playbackStatus}")
+            it.toDomain() 
+        }
+
+    override fun sendMediaCommand(player: String, command: String) {
+        val mappedCommand = when (command.lowercase()) {
+            "playpause" -> "play_pause"
+            else -> command.lowercase()
+        }
+        val request = MediaActionRequest(playerName = player, command = mappedCommand)
+        val text = json.encodeToString(request)
+        webSocket?.send(text) ?: Log.e("WebSocketPcRepo", "WebSocket not connected, cannot send command")
+    }
 }
