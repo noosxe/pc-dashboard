@@ -1,6 +1,8 @@
 package com.noosxe.pc_dashboard.ui.dashboard
 
 import app.cash.turbine.test
+import com.noosxe.pc_dashboard.data.MediaState
+import com.noosxe.pc_dashboard.data.PlayerState
 import com.noosxe.pc_dashboard.data.PcNotification
 import com.noosxe.pc_dashboard.data.PcRepository
 import com.noosxe.pc_dashboard.data.PcStats
@@ -64,11 +66,33 @@ class DashboardViewModelTest {
         }
     }
 
+    @Test
+    fun `mediaState should update when repository emits new media state`() = runTest {
+        val mediaFlow = MutableSharedFlow<MediaState>(replay = 1)
+        val repository = FakePcRepository(mediaStateFlow = mediaFlow)
+        val viewModel = DashboardViewModel(repository)
+
+        viewModel.mediaState.test {
+            // Initial value should have no players (or mock players if using MockPcRepository, but here we use Fake)
+            assertEquals(0, awaitItem().players.size)
+
+            val newState = MediaState(players = listOf(PlayerState(player = "Spotify", title = "Song", artist = "Artist")))
+            mediaFlow.emit(newState)
+            val result = awaitItem()
+            assertEquals(1, result.players.size)
+            assertEquals("Spotify", result.players[0].player)
+        }
+    }
+
     private class FakePcRepository(
-        private val sessionLockFlow: Flow<Boolean>
+        private val sessionLockFlow: Flow<Boolean> = flowOf(false),
+        private val mediaStateFlow: Flow<MediaState> = flowOf(MediaState())
     ) : PcRepository {
         override fun getPcStatsFlow(): Flow<PcStats> = flowOf(PcStats())
         override fun getNotificationsFlow(): Flow<PcNotification> = MutableSharedFlow()
         override fun getSessionLockFlow(): Flow<Boolean> = sessionLockFlow
+        override fun getMediaStateFlow(): Flow<MediaState> = mediaStateFlow
+        override fun getCommandResponsesFlow(): Flow<String> = flowOf()
+        override fun sendMediaCommand(player: String, command: String) {}
     }
 }

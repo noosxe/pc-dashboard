@@ -52,4 +52,16 @@ class MockPcRepository : PcRepository {
             delay(1000000) // Effectively disabled for production mock
         }
     }
+
+    override fun getMediaStateFlow(): Flow<MediaState> = flow {
+        // ... (existing mock data)
+    }
+
+    override fun getCommandResponsesFlow(): Flow<String> = flow {
+        // No responses for mock
+    }
+
+    override fun sendMediaCommand(player: String, command: String) {
+        // No-op for mock
+    }
 }

@@ -2,10 +2,12 @@ package com.noosxe.pc_dashboard.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.noosxe.pc_dashboard.data.MediaState
 import com.noosxe.pc_dashboard.data.MockPcRepository
 import com.noosxe.pc_dashboard.data.PcNotification
 import com.noosxe.pc_dashboard.data.PcRepository
 import com.noosxe.pc_dashboard.data.PcStats
+import com.noosxe.pc_dashboard.data.PlayerState
 import com.noosxe.pc_dashboard.data.SettingsRepository
 import com.noosxe.pc_dashboard.data.WebSocketPcRepository
 import com.noosxe.pc_dashboard.ui.theme.AppTheme
@@ -61,9 +63,37 @@ class DashboardViewModel(
 
     val notifications: Flow<PcNotification> = pcRepository.getNotificationsFlow()
 
+    val mediaState: StateFlow<MediaState> = pcRepository.getMediaStateFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = if (pcRepository is MockPcRepository) {
+                MediaState(
+                    players = listOf(
+                        PlayerState(
+                            player = "spotify",
+                            identity = "Spotify",
+                            status = "Playing",
+                            title = "Blinding Lights",
+                            artist = "The Weeknd",
+                            positionMs = 45000,
+                            lengthMs = 200000,
+                            artUrl = "https://i.scdn.co/image/ab67616d0000b273c51bd0179a6d859e51c223c3"
+                        )
+                    )
+                )
+            } else {
+                MediaState()
+            }
+        )
+
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
             settingsRepository.setTheme(theme)
         }
+    }
+
+    fun onMediaCommand(player: String, command: String) {
+        pcRepository.sendMediaCommand(player, command)
     }
 }
