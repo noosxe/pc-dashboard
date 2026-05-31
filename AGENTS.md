@@ -38,6 +38,32 @@ The project follows **MVVM** with a **Flow-based** unidirectional data flow.
 - **Mocking**: The `MockPcRepository` allows for rapid UI iteration without needing a live PC connection.
 - **Theming**: Heavy emphasis on aesthetic themes (Tokyo Night, Catppuccin) using custom `ColorScheme` definitions.
 
+## Git Workflow & Rules for Agents
+
+To maintain a clean and stable repository, agents must adhere to the following workflow:
+
+1.  **Branching Strategy**:
+    - **Never push directly to `main`**. It is a protected branch.
+    - Always commit work on a **new branch**.
+    - Branch names must use descriptive prefixes:
+        - `feature/`: New features or significant UI updates.
+        - `fix/`: Bug fixes.
+        - `docs/`: Documentation updates (including `AGENTS.md`).
+        - `ci/`: CI/CD configuration changes.
+        - `chore/`: Maintenance tasks.
+
+2.  **Commit Standards**:
+    - Commit messages must start with a prefix matching the branch type: `docs:`, `fix:`, `feature:`, `ci:`, `chore:`, etc.
+    - **Commit Message Bodies**: Must contain detailed, useful information regarding the changes. Avoid one-line commits for complex changes.
+
+3.  **Safety & Communication**:
+    - **Never blindly discard changes**.
+    - When in doubt about a change or a deletion, **ask the user** for confirmation.
+    - If unsure if specific changes are required, use `git stash` to preserve them for potential later use instead of deleting them.
+
+4.  **Merging**:
+    - Once changes are pushed to a feature/fix branch, notify the user so they can review and merge the Pull Request on GitHub.
+
 ## Tips for Agents
 - **Adding Stats**: Update `PcStats.kt`, the `PcRepository` interface, and then update both `MockPcRepository` and the UI.
 - **Adding Themes**: Add a new entry to `AppTheme` enum, define colors in `Color.kt`, create a `ColorScheme` in `Theme.kt`, and update the `when` branch in `PCDashboardTheme`.
