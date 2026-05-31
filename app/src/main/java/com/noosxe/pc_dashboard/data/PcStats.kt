@@ -175,12 +175,39 @@ data class NotificationDataDto(
     @SerialName("expire_timeout") val expireTimeout: Int
 )
 
+@Serializable
+@SerialName("media_response")
+data class MediaResponseMessage(
+    override val type: String,
+    val status: String,
+    val message: String? = null,
+    override val timestamp: Long = 0
+) : ServerMessage()
+
+@Serializable
+@SerialName("success")
+data class SuccessMessage(
+    override val type: String,
+    val status: String,
+    val message: String? = null,
+    override val timestamp: Long = 0
+) : ServerMessage()
+
+@Serializable
+data class UnknownMessage(
+    override val type: String,
+    override val timestamp: Long = 0
+) : ServerMessage()
+
 object ServerMessageSerializer : JsonContentPolymorphicSerializer<ServerMessage>(ServerMessage::class) {
     override fun selectDeserializer(element: JsonElement) = when (element.jsonObject["type"]?.jsonPrimitive?.content) {
         "notification_event" -> NotificationMessage.serializer()
         "session_lock" -> SessionLockMessage.serializer()
         "media_state" -> MediaMessage.serializer()
-        else -> TelemetryMessage.serializer()
+        "media_response" -> MediaResponseMessage.serializer()
+        "success" -> SuccessMessage.serializer()
+        "telemetry" -> TelemetryMessage.serializer()
+        else -> UnknownMessage.serializer()
     }
 }
 

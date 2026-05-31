@@ -7,5 +7,6 @@ interface PcRepository {
     fun getNotificationsFlow(): Flow<PcNotification>
     fun getSessionLockFlow(): Flow<Boolean>
     fun getMediaStateFlow(): Flow<MediaState>
+    fun getCommandResponsesFlow(): Flow<String>
     fun sendMediaCommand(player: String, command: String)
 }

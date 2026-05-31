@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.retryWhen
@@ -28,7 +30,10 @@ class WebSocketPcRepository(
     private val wsUrl: String = "ws://127.0.0.1:12345/ws"
 ) : PcRepository {
 
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json { 
+        ignoreUnknownKeys = true 
+        encodeDefaults = true
+    }
     private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var webSocket: WebSocket? = null
 
@@ -98,6 +103,16 @@ class WebSocketPcRepository(
             Log.d("WebSocketPcRepo", "Received MPRIS message: player=${firstPlayer?.playerName}, title=${firstPlayer?.metadata?.title}, status=${firstPlayer?.playbackStatus}")
             it.toDomain() 
         }
+
+    override fun getCommandResponsesFlow(): Flow<String> = serverMessageFlow
+        .map {
+            when (it) {
+                is MediaResponseMessage -> "Media Command: ${it.status}${it.message?.let { m -> " ($m)" } ?: ""}"
+                is SuccessMessage -> "Success: ${it.status}${it.message?.let { m -> " ($m)" } ?: ""}"
+                else -> null
+            }
+        }
+        .filterNotNull()
 
     override fun sendMediaCommand(player: String, command: String) {
         val mappedCommand = when (command.lowercase()) {

@@ -54,37 +54,11 @@ class MockPcRepository : PcRepository {
     }
 
     override fun getMediaStateFlow(): Flow<MediaState> = flow {
-        emit(
-            MediaState(
-                players = listOf(
-                    PlayerState(
-                        player = "spotify",
-                        identity = "Spotify",
-                        title = "Blinding Lights",
-                        artist = "The Weeknd",
-                        status = "Playing",
-                        positionMs = 45000,
-                        lengthMs = 200000,
-                        volume = 0.8,
-                        artUrl = "https://i.scdn.co/image/ab67616d0000b273c51bd0179a6d859e51c223c3"
-                    ),
-                    PlayerState(
-                        player = "firefox.instance_1_63",
-                        identity = "Mozilla Zen",
-                        title = "Rust Tutorial for Beginners",
-                        artist = "No Boilerplate",
-                        status = "Paused",
-                        positionMs = 120000,
-                        lengthMs = 600000,
-                        volume = 1.0,
-                        artUrl = "https://img.youtube.com/vi/msWpXh46v8U/0.jpg"
-                    )
-                )
-            )
-        )
-        while (true) {
-            delay(1000000)
-        }
+        // ... (existing mock data)
+    }
+
+    override fun getCommandResponsesFlow(): Flow<String> = flow {
+        // No responses for mock
     }
 
     override fun sendMediaCommand(player: String, command: String) {
