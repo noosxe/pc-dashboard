@@ -1,6 +1,5 @@
 package com.noosxe.pc_dashboard.data
 
-import android.util.Base64
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
@@ -40,25 +39,22 @@ data class PlayerState(
     val positionMs: Long = 0,
     val lengthMs: Long = 0,
     val volume: Double = 0.0,
-    val artUrl: String = "",
-    val artBytes: ByteArray? = null
+    val artUrl: String = ""
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         other as PlayerState
-        if (player != other.player) return false
-        if (trackId != other.trackId) return false
-        if (title != other.title) return false
-        if (artist != other.artist) return false
-        if (album != other.album) return false
-        if (status != other.status) return false
-        if (positionMs != other.positionMs) return false
-        if (lengthMs != other.lengthMs) return false
-        if (volume != other.volume) return false
-        if (artUrl != other.artUrl) return false
-        if (!artBytes.contentEquals(other.artBytes)) return false
-        return true
+        return player == other.player &&
+                trackId == other.trackId &&
+                title == other.title &&
+                artist == other.artist &&
+                album == other.album &&
+                status == other.status &&
+                positionMs == other.positionMs &&
+                lengthMs == other.lengthMs &&
+                volume == other.volume &&
+                artUrl == other.artUrl
     }
 
     override fun hashCode(): Int {
@@ -72,7 +68,6 @@ data class PlayerState(
         result = 31 * result + lengthMs.hashCode()
         result = 31 * result + volume.hashCode()
         result = 31 * result + artUrl.hashCode()
-        result = 31 * result + (artBytes?.contentHashCode() ?: 0)
         return result
     }
 }
@@ -306,14 +301,6 @@ fun MediaMessage.toDomain(): MediaState {
     return MediaState(
         players = data.activePlayers.map { player ->
             val artUrl = player.metadata.artUrl.ensureImageProtocol()
-            val artBytes = if (artUrl.startsWith("data:", ignoreCase = true)) {
-                try {
-                    val base64Data = artUrl.substringAfter("base64,")
-                    Base64.decode(base64Data, Base64.DEFAULT)
-                } catch (e: Exception) {
-                    null
-                }
-            } else null
 
             PlayerState(
                 player = player.playerName,
@@ -327,8 +314,7 @@ fun MediaMessage.toDomain(): MediaState {
                 positionMs = player.positionMicroseconds / 1000,
                 lengthMs = player.metadata.lengthMicroseconds / 1000,
                 volume = player.volume,
-                artUrl = artUrl,
-                artBytes = artBytes
+                artUrl = artUrl
             )
         }
     )

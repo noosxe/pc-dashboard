@@ -1,5 +1,6 @@
 package com.noosxe.pc_dashboard.ui.components
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -26,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,16 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.noosxe.pc_dashboard.data.PcNotification
-
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import android.util.Log
 
 @Composable
 fun NotificationBanner(
@@ -56,26 +50,6 @@ fun NotificationBanner(
         Log.d("PERF_LATENCY", "UI_SHOW_NOTIFICATION id=${notification.id} ts=${System.currentTimeMillis()}")
     }
 
-    var iconModel by remember(notification.id) { mutableStateOf<ByteArray?>(null) }
-    LaunchedEffect(notification.appIconBase64, visible) {
-        val base64 = notification.appIconBase64
-        if (visible && base64 != null && base64.isNotBlank()) {
-            withContext(Dispatchers.Default) {
-                val startTime = System.currentTimeMillis()
-                val decoded = try {
-                    val pureBase64 = base64.substringAfter("base64,")
-                    android.util.Base64.decode(pureBase64, android.util.Base64.DEFAULT)
-                } catch (_: Exception) {
-                    null
-                }
-                val duration = System.currentTimeMillis() - startTime
-                Log.d("PERF_LATENCY", "UI_DECODE_BASE64 id=${notification.id} duration=${duration}ms size=${base64.length}")
-                iconModel = decoded
-            }
-        } else {
-            iconModel = null
-        }
-    }
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -121,17 +95,17 @@ fun NotificationBanner(
                                 imageVector = simpleIcon,
                                 contentDescription = notification.appName,
                                 modifier = Modifier.size(28.dp),
-                                tint = Color.Unspecified // SimpleIcons are often colored or we use onSurfaceVariant
+                                tint = Color.Unspecified
                             )
-                        } else if (iconModel != null) {
-                            // Tier 2: Host-provided Base64
+                        } else if (notification.appIconBase64?.isNotBlank() == true) {
+                            // Tier 2: Host-provided Base64 (Coil 3 handles data URIs)
                             AsyncImage(
-                                model = iconModel,
+                                model = notification.appIconBase64,
                                 contentDescription = notification.appName,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         } else if (notification.appIcon.isNotBlank() && !notification.appIcon.contains("/")) {
-                            // Try loading by name via Coil (might resolve some system icons)
+                            // Try loading by name via Coil
                             AsyncImage(
                                 model = notification.appIcon,
                                 contentDescription = notification.appName,
