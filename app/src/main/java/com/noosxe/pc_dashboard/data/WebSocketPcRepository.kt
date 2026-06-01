@@ -24,6 +24,8 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.security.MessageDigest
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 class WebSocketPcRepository(
     private val client: OkHttpClient = OkHttpClient(),
@@ -37,6 +39,9 @@ class WebSocketPcRepository(
     private val repositoryScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var webSocket: WebSocket? = null
 
+    // Cache for song art data to handle messages with missing art_url for the same song
+    private val artUrlCache = mutableMapOf<String, PlayerState>()
+
     private val serverMessageFlow: Flow<ServerMessage> = callbackFlow {
         val request = Request.Builder().url(wsUrl).build()
         
@@ -49,7 +54,12 @@ class WebSocketPcRepository(
                 try {
                     val serverMessage = json.decodeFromString<ServerMessage>(text)
                     if (BuildConfig.DEBUG) {
-                        Log.d("WS_${serverMessage.type.uppercase()}", text)
+                        if (serverMessage is MediaMessage) {
+                            val artLengths = serverMessage.data.activePlayers.map { it.metadata.artUrl.length }
+                            Log.d("WS_MEDIA", "Received media state. Art lengths: $artLengths")
+                        } else {
+                            Log.d("WS_${serverMessage.type.uppercase()}", text.take(1000))
+                        }
                     }
                     trySend(serverMessage)
                 } catch (e: Exception) {
@@ -101,11 +111,45 @@ class WebSocketPcRepository(
 
     override fun getMediaStateFlow(): Flow<MediaState> = serverMessageFlow
         .filterIsInstance<MediaMessage>()
-        .map { 
-            val domain = it.toDomain()
+        .map { message ->
+            val domain = message.toDomain()
+            val playersWithArt = domain.players.map { player ->
+                // Create a unique key for the song to cache its art URL
+                val rawKey = "${player.trackId}|${player.title}|${player.artist}|${player.album}"
+                val songKey = try {
+                    val digest = MessageDigest.getInstance("SHA-1")
+                    val result = digest.digest(rawKey.toByteArray())
+                    result.joinToString("") { "%02x".format(it) }
+                } catch (e: Exception) {
+                    rawKey // Fallback to raw key if hashing fails
+                }
+
+                val processedPlayer = if (player.artUrl.isNotEmpty() && !player.artUrl.startsWith("file://")) {
+                    // Update cache if new art is provided (either URL or Bytes)
+                    artUrlCache[songKey] = player
+                    player
+                } else {
+                    // Try to retrieve from cache if art is missing in the message
+                    val cachedPlayer = artUrlCache[songKey]
+                    if (cachedPlayer != null) {
+                        player.copy(
+                            artUrl = cachedPlayer.artUrl,
+                            artBytes = cachedPlayer.artBytes
+                        )
+                    } else {
+                        player
+                    }
+                }
+
+                // If this is a new song (different songKey), we should NOT use art from a previous song.
+                // However, the current logic only populates art if the message has it OR if it's in cache for THIS songKey.
+                // So "old image for a new track" might be coming from Coil's cache if the trackId is the same or blank.
+                processedPlayer
+            }
             // Ensure stable order by sorting players by their ID (player name)
-            domain.copy(players = domain.players.sortedBy { p -> p.player })
+            MediaState(players = playersWithArt.sortedBy { it.player })
         }
+        .distinctUntilChanged()
 
     override fun getCommandResponsesFlow(): Flow<String> = serverMessageFlow
         .map {

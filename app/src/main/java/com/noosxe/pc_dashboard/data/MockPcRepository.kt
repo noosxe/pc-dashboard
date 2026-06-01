@@ -60,7 +60,27 @@ class MockPcRepository : PcRepository {
     }
 
     override fun getMediaStateFlow(): Flow<MediaState> = flow {
-        // ... (existing mock data)
+        while (true) {
+            emit(
+                MediaState(
+                    players = listOf(
+                        PlayerState(
+                            player = "spotify",
+                            identity = "Spotify",
+                            title = "Never Gonna Give You Up",
+                            artist = "Rick Astley",
+                            album = "Whenever You Need Somebody",
+                            status = "Playing",
+                            positionMs = 30000,
+                            lengthMs = 213000,
+                            volume = 0.8,
+                            artUrl = "https://i.scdn.co/image/ab67616d0000b273575511af41b4b419830739c2"
+                        )
+                    )
+                )
+            )
+            delay(2000)
+        }
     }
 
     override fun getCommandResponsesFlow(): Flow<String> = flow {
