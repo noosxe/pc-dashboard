@@ -13,8 +13,10 @@ import kotlinx.serialization.json.jsonPrimitive
 data class PcStats(
     val cpuUsage: Float = 0f,
     val cpuTemp: Float = 0f,
+    val cpuFreq: Float = 0f,
     val gpuUsage: Float = 0f,
     val gpuTemp: Float = 0f,
+    val gpuFreq: Float = 0f,
     val ramUsage: Float = 0f,
     val vramUsage: Float = 0f,
     val ramTotal: Float = 16f, // GB
@@ -145,13 +147,15 @@ data class TelemetryData(
 @Serializable
 data class CpuStatsDto(
     @SerialName("usage_percent") val usagePercent: Float,
-    @SerialName("temp_celsius") val tempCelsius: Float
+    @SerialName("temp_celsius") val tempCelsius: Float,
+    @SerialName("freq_mhz") val frequencyMhz: Float = 0f
 )
 
 @Serializable
 data class GpuStatsDto(
     @SerialName("usage_percent") val usagePercent: Float,
     @SerialName("temp_celsius") val tempCelsius: Float,
+    @SerialName("freq_mhz") val frequencyMhz: Float = 0f,
     @SerialName("vram_used_bytes") val vramUsedBytes: Long,
     @SerialName("vram_total_bytes") val vramTotalBytes: Long
 )
@@ -220,8 +224,10 @@ fun TelemetryMessage.toDomain(): PcStats {
     return PcStats(
         cpuUsage = data.cpu.usagePercent,
         cpuTemp = data.cpu.tempCelsius,
+        cpuFreq = data.cpu.frequencyMhz,
         gpuUsage = data.gpu.usagePercent,
         gpuTemp = data.gpu.tempCelsius,
+        gpuFreq = data.gpu.frequencyMhz,
         ramUsage = data.ram.usedBytes / bytesToGb,
         ramTotal = data.ram.totalBytes / bytesToGb,
         vramUsage = data.gpu.vramUsedBytes / bytesToGb,

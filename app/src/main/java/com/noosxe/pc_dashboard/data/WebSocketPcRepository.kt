@@ -1,13 +1,13 @@
 package com.noosxe.pc_dashboard.data
 
 import android.util.Log
+import com.noosxe.pc_dashboard.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filter
@@ -48,6 +48,9 @@ class WebSocketPcRepository(
             override fun onMessage(webSocket: WebSocket, text: String) {
                 try {
                     val serverMessage = json.decodeFromString<ServerMessage>(text)
+                    if (BuildConfig.DEBUG) {
+                        Log.d("WS_${serverMessage.type.uppercase()}", text)
+                    }
                     trySend(serverMessage)
                 } catch (e: Exception) {
                     Log.e("WebSocketPcRepo", "Error parsing JSON: $text", e)

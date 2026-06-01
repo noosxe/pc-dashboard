@@ -52,8 +52,8 @@ class NotificationParsingTest {
               "type": "telemetry",
               "timestamp": 1716213825,
               "data": {
-                "cpu": { "usage_percent": 15.5, "temp_celsius": 45.0 },
-                "gpu": { "usage_percent": 20.0, "temp_celsius": 50.0, "vram_used_bytes": 1073741824, "vram_total_bytes": 8589934592 },
+                "cpu": { "usage_percent": 15.5, "temp_celsius": 45.0, "freq_mhz": 3600.0 },
+                "gpu": { "usage_percent": 20.0, "temp_celsius": 50.0, "freq_mhz": 1200.0, "vram_used_bytes": 1073741824, "vram_total_bytes": 8589934592 },
                 "ram": { "used_bytes": 4294967296, "total_bytes": 17179869184, "percentage": 25.0 }
               }
             }
@@ -65,6 +65,8 @@ class NotificationParsingTest {
 
         assertEquals(15.5f, stats.cpuUsage)
         assertEquals(45.0f, stats.cpuTemp)
+        assertEquals(3600.0f, stats.cpuFreq)
+        assertEquals(1200.0f, stats.gpuFreq)
         assertEquals(4.0f, stats.ramUsage)
         assertEquals(16.0f, stats.ramTotal)
     }
