@@ -48,25 +48,32 @@ The project follows **MVVM** with a **Flow-based** unidirectional data flow and 
 - **Session Locking**: Automatically dims the Android screen when the PC is locked to save power and reduce burn-in.
 - **Media Controls**: Integrated media controls using a `HorizontalPager` to switch between multiple active media players on the PC.
 
-## Git Workflow & Rules for Agents
+## Development Workflow & Guidelines
 
-To maintain a clean and stable repository, agents must adhere to the following workflow:
+To maintain a clean and stable repository, agents must adhere to the following workflow and quality standards:
 
-1.  **Branching Strategy**:
+### 1. Git Workflow
+- **Branching Strategy**: 
     - **Never push directly to `main`**. It is a protected branch.
-    - Always commit work on a **new branch**.
-    - Branch names must use descriptive prefixes: `feature/`, `fix/`, `docs/`, `ci/`, `chore/`.
+    - **All feature work must happen on a new branch**.
+    - Use descriptive prefixes: `feature/`, `fix/`, `docs/`, `ci/`, `chore/`.
+- **Commit Standards**:
+    - Messages must start with a prefix: `docs:`, `fix:`, `feature:`, `ci:`, `chore:`, etc.
+    - Commit bodies must contain detailed information regarding the changes.
+- **Merging**: Notify the user once changes are pushed to a branch for review and merging.
 
-2.  **Commit Standards**:
-    - Commit messages must start with a prefix: `docs:`, `fix:`, `feature:`, `ci:`, `chore:`, etc.
-    - **Commit Message Bodies**: Must contain detailed, useful information regarding the changes.
-
-3.  **Safety & Communication**:
-    - **Never blindly discard changes**. Ask the user if unsure.
-    - Use `git stash` to preserve potential changes instead of deleting them.
-
-4.  **Merging**:
-    - Notify the user once changes are pushed to a branch for review and merging.
+### 2. Feature Development Guidelines
+- **Documentation**: 
+    - Upon completion, update `README.md`.
+    - If necessary, update `AGENTS.md` to reflect architectural or pattern changes.
+    - Always consult the `docs/` (symlinked directory) for technical specifications.
+- **Logging**: Wherever deemed necessary, add debug logs with proper tags for efficient Logcat filtering.
+- **Protocol Accuracy**: Always double-check JSON field names in protocol/WebSocket specs to ensure compatibility.
+- **Quality & Testing**: 
+    - Always add a reasonable amount of tests for new functionality.
+    - **Verify the app builds and all tests pass** before committing or pushing changes to remote.
+- **Communication**: Always ask clarifying questions when in doubt or when requirements are ambiguous.
+- **Safety**: Never blindly discard changes. Use `git stash` to preserve potential work.
 
 ## Tips for Agents
 - **Adding Stats**: Update DTOs in `PcStats.kt`, the `PcRepository` interface, then update `MockPcRepository`, `WebSocketPcRepository`, and finally the UI components (`StatCard`, `MemoryCard`).
