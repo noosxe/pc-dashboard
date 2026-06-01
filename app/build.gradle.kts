@@ -14,8 +14,12 @@ android {
 
     defaultConfig {
         applicationId = "com.noosxe.pc_dashboard"
-        minSdk = 25
-        targetSdk = 36
+        minSdk {
+            version = release(25)
+        }
+        targetSdk {
+            version = release(36)
+        }
         versionCode = 1
         versionName = "1.0"
 
