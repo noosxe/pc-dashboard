@@ -126,4 +126,16 @@ class WebSocketPcRepository(
         val text = json.encodeToString(request)
         webSocket?.send(text) ?: Log.e("WebSocketPcRepo", "WebSocket not connected, cannot send command")
     }
+
+    override fun sendNotificationAction(notificationId: Int, actionKey: String) {
+        val request = NotificationActionRequest(notificationId = notificationId, actionKey = actionKey)
+        val text = json.encodeToString(request)
+        webSocket?.send(text) ?: Log.e("WebSocketPcRepo", "WebSocket not connected, cannot send notification action")
+    }
+
+    override fun dismissNotification(notificationId: Int) {
+        val request = NotificationDismissRequest(notificationId = notificationId)
+        val text = json.encodeToString(request)
+        webSocket?.send(text) ?: Log.e("WebSocketPcRepo", "WebSocket not connected, cannot dismiss notification")
+    }
 }

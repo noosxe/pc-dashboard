@@ -14,6 +14,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,8 +47,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,10 +56,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -70,8 +71,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.noosxe.pc_dashboard.data.PcNotification
 import com.noosxe.pc_dashboard.data.PlayerState
 import com.noosxe.pc_dashboard.service.PcStatsService
+import com.noosxe.pc_dashboard.ui.components.NotificationBanner
 import com.noosxe.pc_dashboard.ui.dashboard.DashboardViewModel
 import com.noosxe.pc_dashboard.ui.theme.AppTheme
 import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
@@ -196,28 +199,44 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PCDashboardApp(viewModel: DashboardViewModel) {
     val navController = rememberNavController()
-    val context = LocalContext.current
+    
+    var currentNotification by remember { mutableStateOf<PcNotification?>(null) }
+    var notificationVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.notifications) {
         viewModel.notifications.collectLatest { notification ->
-            Toast.makeText(
-                context,
-                "${notification.appName}: ${notification.summary}\n${notification.body}",
-                Toast.LENGTH_LONG
-            ).show()
+            currentNotification = notification
+            notificationVisible = true
+            delay(5000)
+            notificationVisible = false
+            delay(500)
+            currentNotification = null
         }
     }
     
-    NavHost(navController = navController, startDestination = "dashboard") {
-        composable("dashboard") {
-            DashboardScreen(
-                viewModel = viewModel,
-            ) { navController.navigate("settings") }
+    Box(modifier = Modifier.fillMaxSize()) {
+        NavHost(navController = navController, startDestination = "dashboard") {
+            composable("dashboard") {
+                DashboardScreen(
+                    viewModel = viewModel,
+                ) { navController.navigate("settings") }
+            }
+            composable("settings") {
+                SettingsScreen(
+                    viewModel = viewModel,
+                ) { navController.popBackStack() }
+            }
         }
-        composable("settings") {
-            SettingsScreen(
-                viewModel = viewModel,
-            ) { navController.popBackStack() }
+
+        currentNotification?.let { notification ->
+            NotificationBanner(
+                notification = notification,
+                visible = notificationVisible,
+                onActionClick = { actionKey ->
+                    viewModel.onNotificationAction(notification.id, actionKey)
+                    notificationVisible = false
+                }
+            )
         }
     }
 }
