@@ -16,16 +16,32 @@ object IconMapper {
             "firefox", "firefox-esr", "firefox-bin" -> SimpleIcons.Firefox
             "google-chrome", "google-chrome-stable", "chrome" -> SimpleIcons.Googlechrome
             "brave-browser" -> SimpleIcons.Brave
+            "visual-studio-code", "code", "vscode", "vscodium" -> SimpleIcons.Vscodium
             "steam" -> SimpleIcons.Steam
             "github" -> SimpleIcons.Github
-            "telegram", "telegram-desktop" -> SimpleIcons.Telegram
+            "telegram", "telegram-desktop", "materialgram" -> SimpleIcons.Telegram
             "whatsapp", "whatsapp-desktop" -> SimpleIcons.Whatsapp
             "signal", "signal-desktop" -> SimpleIcons.Signal
             "intellij-idea", "intellij-idea-community" -> SimpleIcons.Intellijidea
             "android-studio" -> SimpleIcons.Androidstudio
+            "pycharm" -> SimpleIcons.Pycharm
+            "webstorm" -> SimpleIcons.Webstorm
+            "clion" -> SimpleIcons.Clion
+            "rider" -> SimpleIcons.Rider
+            "goland" -> SimpleIcons.Goland
+            "phpstorm" -> SimpleIcons.Phpstorm
+            "rubymine" -> SimpleIcons.Rubymine
+            "datagrip" -> SimpleIcons.Datagrip
+            "cursor" -> SimpleIcons.Cursor
+            "zed" -> SimpleIcons.Zedindustries
             "obs", "obs-studio" -> SimpleIcons.Obsstudio
             "thunderbird" -> SimpleIcons.Thunderbird
             "bitwarden" -> SimpleIcons.Bitwarden
+            "vlc" -> SimpleIcons.Vlcmediaplayer
+            "wireshark" -> SimpleIcons.Wireshark
+            "sublime-text" -> SimpleIcons.Sublimetext
+            "vim" -> SimpleIcons.Vim
+            "neovim" -> SimpleIcons.Neovim
             "dropbox" -> SimpleIcons.Dropbox
             "google-drive" -> SimpleIcons.Googledrive
             "zoom", "zoom-desktop" -> SimpleIcons.Zoom
@@ -55,6 +71,24 @@ object IconMapper {
             "php" -> SimpleIcons.Php
             "ruby" -> SimpleIcons.Ruby
             "swift" -> SimpleIcons.Swift
+            "tidal" -> SimpleIcons.Tidal
+            "deezer" -> SimpleIcons.Deezer
+            "plex" -> SimpleIcons.Plex
+            "jellyfin" -> SimpleIcons.Jellyfin
+            "kodi" -> SimpleIcons.Kodi
+            "youtube-music" -> SimpleIcons.Youtubemusic
+            "x", "twitter" -> SimpleIcons.X
+            "mastodon" -> SimpleIcons.Mastodon
+            "bluesky" -> SimpleIcons.Bluesky
+            "epic-games" -> SimpleIcons.Epicgames
+            "gog" -> SimpleIcons.Gogdotcom
+            "origin" -> SimpleIcons.Origin
+            "ubisoft" -> SimpleIcons.Ubisoft
+            "battle.net" -> SimpleIcons.Battledotnet
+            "ghostty" -> SimpleIcons.Ghostty
+            "alacritty" -> SimpleIcons.Alacritty
+            "wezterm" -> SimpleIcons.Wezterm
+            "iterm2" -> SimpleIcons.Iterm2
             "apple" -> SimpleIcons.Apple
             "linux" -> SimpleIcons.Linux
             "ubuntu" -> SimpleIcons.Ubuntu

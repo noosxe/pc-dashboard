@@ -65,6 +65,7 @@ PCDashboard supports a wide range of aesthetic themes:
 
 ## Roadmap
 
+- **Secure Communication**: Support for secured WebSocket (`wss://`) communication.
 - **Interactive Notifications**: Support for notification actions (e.g., clicking 'Reply' or 'Dismiss' from the Android device).
 - **Customizable Layouts**: Allow users to reorder or hide specific dashboard widgets.
 - **Historical Data**: Graphs for telemetry over time.
