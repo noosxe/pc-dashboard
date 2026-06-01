@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.stateIn
 
 class DashboardViewModel(
@@ -54,7 +57,20 @@ class DashboardViewModel(
             initialValue = true
         )
 
-    val notifications: Flow<PcNotification> = pcRepository.getNotificationsFlow()
+    val notifications: Flow<PcNotification> = merge(
+        pcRepository.getNotificationsFlow(),
+        pcRepository.getPowerProfileFlow().drop(1).map { profile ->
+            PcNotification(
+                id = -100, // Fixed ID for power profile notifications
+                appName = "System",
+                appIcon = "power-profile",
+                summary = "Power Profile Changed",
+                body = "Active profile: $profile",
+                actions = emptyList(),
+                timestamp = System.currentTimeMillis() / 1000
+            )
+        }
+    )
 
     val mediaState: StateFlow<MediaState> = pcRepository.getMediaStateFlow()
         .stateIn(

@@ -92,26 +92,46 @@ class WebSocketPcRepository(
         replay = 1
     )
 
-    override fun getPcStatsFlow(): Flow<PcStats> = serverMessageFlow
+    private val telemetryFlow = serverMessageFlow
         .filterIsInstance<TelemetryMessage>()
         .map { it.toDomain() }
+        .shareIn(repositoryScope, SharingStarted.WhileSubscribed(5000), replay = 1)
 
-    override fun getNotificationsFlow(): Flow<PcNotification> = serverMessageFlow
+    private val notificationFlow = serverMessageFlow
         .filterIsInstance<NotificationMessage>()
         .map { it.toDomain() }
+        .shareIn(repositoryScope, SharingStarted.WhileSubscribed(5000), replay = 0)
 
-    override fun getSessionLockFlow(): Flow<Boolean> = serverMessageFlow
+    private val sessionLockFlow = serverMessageFlow
         .filterIsInstance<SessionLockMessage>()
         .map { it.data.locked }
+        .distinctUntilChanged()
+        .shareIn(repositoryScope, SharingStarted.Eagerly, replay = 1)
 
-    override fun getMediaStateFlow(): Flow<MediaState> = serverMessageFlow
+    private val powerProfileFlow = serverMessageFlow
+        .filterIsInstance<PowerProfileMessage>()
+        .map { it.data.activeProfile }
+        .distinctUntilChanged()
+        .shareIn(repositoryScope, SharingStarted.Eagerly, replay = 1)
+
+    private val mediaStateFlow = serverMessageFlow
         .filterIsInstance<MediaMessage>()
         .map { message ->
             val domain = message.toDomain()
-            // Ensure stable order by sorting players by their ID (player name)
             MediaState(players = domain.players.sortedBy { it.player })
         }
         .distinctUntilChanged()
+        .shareIn(repositoryScope, SharingStarted.Eagerly, replay = 1)
+
+    override fun getPcStatsFlow(): Flow<PcStats> = telemetryFlow
+
+    override fun getNotificationsFlow(): Flow<PcNotification> = notificationFlow
+
+    override fun getSessionLockFlow(): Flow<Boolean> = sessionLockFlow
+
+    override fun getPowerProfileFlow(): Flow<String> = powerProfileFlow
+
+    override fun getMediaStateFlow(): Flow<MediaState> = mediaStateFlow
 
 
     override fun getCommandResponsesFlow(): Flow<String> = serverMessageFlow

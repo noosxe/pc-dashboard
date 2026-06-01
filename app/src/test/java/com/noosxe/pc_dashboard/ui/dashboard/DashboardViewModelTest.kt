@@ -84,13 +84,31 @@ class DashboardViewModelTest {
         }
     }
 
+    @Test
+    fun `notifications should emit when power profile changes`() = runTest {
+        val powerProfileFlow = MutableSharedFlow<String>(replay = 1)
+        val repository = FakePcRepository(powerProfileFlow = powerProfileFlow)
+        val viewModel = DashboardViewModel(repository)
+
+        viewModel.notifications.test {
+            powerProfileFlow.emit("balanced") // Initial state, dropped
+            powerProfileFlow.emit("performance") // Change, notified
+            val notification = awaitItem()
+            assertEquals(-100, notification.id)
+            assertEquals("Power Profile Changed", notification.summary)
+            assertEquals("Active profile: performance", notification.body)
+        }
+    }
+
     private class FakePcRepository(
         private val sessionLockFlow: Flow<Boolean> = flowOf(false),
-        private val mediaStateFlow: Flow<MediaState> = flowOf(MediaState())
+        private val mediaStateFlow: Flow<MediaState> = flowOf(MediaState()),
+        private val powerProfileFlow: Flow<String> = flowOf()
     ) : PcRepository {
         override fun getPcStatsFlow(): Flow<PcStats> = flowOf(PcStats())
         override fun getNotificationsFlow(): Flow<PcNotification> = MutableSharedFlow()
         override fun getSessionLockFlow(): Flow<Boolean> = sessionLockFlow
+        override fun getPowerProfileFlow(): Flow<String> = powerProfileFlow
         override fun getMediaStateFlow(): Flow<MediaState> = mediaStateFlow
         override fun getCommandResponsesFlow(): Flow<String> = flowOf()
         override fun sendMediaCommand(player: String, command: String) {}
