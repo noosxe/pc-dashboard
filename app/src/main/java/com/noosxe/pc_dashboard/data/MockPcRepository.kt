@@ -59,6 +59,17 @@ class MockPcRepository : PcRepository {
         }
     }
 
+    override fun getPowerProfileFlow(): Flow<String> = flow {
+        val profiles = listOf("balanced", "power-saver", "performance")
+        var index = 0
+        delay(8000) // Initial delay
+        while (true) {
+            emit(profiles[index])
+            index = (index + 1) % profiles.size
+            delay(30000) // Update every 30 seconds
+        }
+    }
+
     override fun getMediaStateFlow(): Flow<MediaState> = flow {
         while (true) {
             emit(

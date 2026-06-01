@@ -118,6 +118,14 @@ data class SessionLockMessage(
 ) : ServerMessage()
 
 @Serializable
+@SerialName("power_profile_state")
+data class PowerProfileMessage(
+    override val type: String,
+    override val timestamp: Long,
+    val data: PowerProfileDataDto
+) : ServerMessage()
+
+@Serializable
 @SerialName("media_state")
 data class MediaMessage(
     override val type: String,
@@ -170,6 +178,17 @@ data class MediaActionArgsDto(
 @Serializable
 data class SessionLockDataDto(
     val locked: Boolean
+)
+
+@Serializable
+data class PowerProfileDataDto(
+    @SerialName("active_profile") val activeProfile: String,
+    @SerialName("available_profiles") val availableProfiles: List<PowerProfileDto>
+)
+
+@Serializable
+data class PowerProfileDto(
+    val profile: String
 )
 
 @Serializable
@@ -257,6 +276,7 @@ object ServerMessageSerializer : JsonContentPolymorphicSerializer<ServerMessage>
     override fun selectDeserializer(element: JsonElement) = when (element.jsonObject["type"]?.jsonPrimitive?.content) {
         "notification_event" -> NotificationMessage.serializer()
         "session_lock" -> SessionLockMessage.serializer()
+        "power_profile_state" -> PowerProfileMessage.serializer()
         "media_state" -> MediaMessage.serializer()
         "media_response" -> MediaResponseMessage.serializer()
         "success" -> SuccessMessage.serializer()

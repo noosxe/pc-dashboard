@@ -1,16 +1,19 @@
 package com.noosxe.pc_dashboard.ui.components
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.ui.graphics.vector.ImageVector
 import compose.icons.SimpleIcons
 import compose.icons.simpleicons.*
 
 object IconMapper {
     /**
-     * Maps an app icon name (from D-Bus) to a SimpleIcons ImageVector.
+     * Maps an app icon name (from D-Bus) to a SimpleIcons or Material ImageVector.
      * Tier 1 Resolution.
      */
     fun getSimpleIcon(iconName: String): ImageVector? {
         return when (iconName.lowercase()) {
+            "power", "power-profile" -> Icons.Default.Bolt
             "discord" -> SimpleIcons.Discord
             "spotify" -> SimpleIcons.Spotify
             "firefox", "firefox-esr", "firefox-bin" -> SimpleIcons.Firefox
@@ -97,5 +100,18 @@ object IconMapper {
             "debian" -> SimpleIcons.Debian
             else -> null
         }
+    }
+
+    /**
+     * Returns true if the icon name corresponds to a brand icon (SimpleIcons)
+     * which should not be tinted.
+     */
+    fun isBrandIcon(iconName: String): Boolean {
+        val name = iconName.lowercase()
+        // Generic system icons that should be tinted
+        if (name == "power" || name == "power-profile") return false
+        
+        // If it's in our mapping and not generic, it's a brand icon
+        return getSimpleIcon(name) != null
     }
 }
