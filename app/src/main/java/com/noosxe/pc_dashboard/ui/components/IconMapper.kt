@@ -22,8 +22,8 @@ object IconMapper {
             "telegram", "telegram-desktop", "materialgram" -> SimpleIcons.Telegram
             "whatsapp", "whatsapp-desktop" -> SimpleIcons.Whatsapp
             "signal", "signal-desktop" -> SimpleIcons.Signal
-            "intellij-idea", "intellij-idea-community" -> SimpleIcons.Intellijidea
-            "android-studio" -> SimpleIcons.Androidstudio
+            "intellij-idea", "intellij-idea-community", "idea", "intellij idea" -> SimpleIcons.Intellijidea
+            "android-studio", "jetbrains-studio", "com.google.androidstudio", "androidstudio", "android studio" -> SimpleIcons.Androidstudio
             "pycharm" -> SimpleIcons.Pycharm
             "webstorm" -> SimpleIcons.Webstorm
             "clion" -> SimpleIcons.Clion
