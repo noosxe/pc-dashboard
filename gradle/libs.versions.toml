@@ -15,7 +15,7 @@ kotlinxSerialization = "1.8.0"
 composeBom = "2026.02.01"
 kotlinxCoroutines = "1.11.0"
 turbine = "1.2.1"
-coil = "2.7.0"
+coil = "3.4.0"
 composeIcons = "2.0.0"
 
 [libraries]
@@ -41,7 +41,8 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 compose-icons-simple = { group = "com.github.joaocsousa", name = "simple-icons", version.ref = "composeIcons" }
 
 [plugins]
