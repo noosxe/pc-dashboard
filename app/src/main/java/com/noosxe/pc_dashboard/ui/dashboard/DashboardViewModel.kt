@@ -8,9 +8,6 @@ import com.noosxe.pc_dashboard.data.PcNotification
 import com.noosxe.pc_dashboard.data.PcRepository
 import com.noosxe.pc_dashboard.data.PcStats
 import com.noosxe.pc_dashboard.data.PlayerState
-import com.noosxe.pc_dashboard.data.SettingsRepository
-import com.noosxe.pc_dashboard.data.WebSocketPcRepository
-import com.noosxe.pc_dashboard.ui.theme.AppTheme
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -19,11 +16,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class DashboardViewModel(
-    private val pcRepository: PcRepository,
-    private val settingsRepository: SettingsRepository = SettingsRepository()
+    private val pcRepository: PcRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<PcStats> = pcRepository.getPcStatsFlow()
@@ -32,8 +27,6 @@ class DashboardViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = PcStats()
         )
-
-    val theme: StateFlow<AppTheme> = settingsRepository.theme
 
     val isLocked: StateFlow<Boolean> = pcRepository.getSessionLockFlow()
         .stateIn(
@@ -86,12 +79,6 @@ class DashboardViewModel(
                 MediaState()
             }
         )
-
-    fun setTheme(theme: AppTheme) {
-        viewModelScope.launch {
-            settingsRepository.setTheme(theme)
-        }
-    }
 
     fun onMediaCommand(player: String, command: String) {
         pcRepository.sendMediaCommand(player, command)

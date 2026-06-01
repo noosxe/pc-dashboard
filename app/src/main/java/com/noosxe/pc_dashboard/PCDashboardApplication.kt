@@ -5,14 +5,17 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.svg.SvgDecoder
 import com.noosxe.pc_dashboard.data.PcRepository
+import com.noosxe.pc_dashboard.data.SettingsRepository
 import com.noosxe.pc_dashboard.data.WebSocketPcRepository
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
 class PCDashboardApplication : Application(), SingletonImageLoader.Factory {
 
-    // Centralized repository instance to be shared across the app
+    // Centralized repository instances to be shared across the app
     lateinit var pcRepository: PcRepository
+        private set
+    lateinit var settingsRepository: SettingsRepository
         private set
 
     override fun newImageLoader(context: coil3.PlatformContext): ImageLoader {
@@ -25,6 +28,8 @@ class PCDashboardApplication : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
+        
+        settingsRepository = SettingsRepository(this)
         
         val client = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)

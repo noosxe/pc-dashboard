@@ -41,7 +41,10 @@ import com.noosxe.pc_dashboard.ui.components.NotificationBanner
 import com.noosxe.pc_dashboard.ui.dashboard.DashboardScreen
 import com.noosxe.pc_dashboard.ui.dashboard.DashboardViewModel
 import com.noosxe.pc_dashboard.ui.dashboard.LockedScreen
-import com.noosxe.pc_dashboard.ui.settings.SettingsScreen
+import com.noosxe.pc_dashboard.ui.settings.NotificationSettingsScreen
+import com.noosxe.pc_dashboard.ui.settings.SettingsMainScreen
+import com.noosxe.pc_dashboard.ui.settings.ThemeSettingsScreen
+import com.noosxe.pc_dashboard.ui.settings.SettingsViewModel
 import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -66,12 +69,24 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val repository = (LocalContext.current.applicationContext as PCDashboardApplication).pcRepository
-            val viewModel: DashboardViewModel = viewModel(
+            val app = (LocalContext.current.applicationContext as PCDashboardApplication)
+            val pcRepository = app.pcRepository
+            val settingsRepository = app.settingsRepository
+
+            val dashboardViewModel: DashboardViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
-                        return DashboardViewModel(repository) as T
+                        return DashboardViewModel(pcRepository) as T
+                    }
+                }
+            )
+
+            val settingsViewModel: SettingsViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return SettingsViewModel(settingsRepository) as T
                     }
                 }
             )
@@ -98,9 +113,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            val currentTheme by viewModel.theme.collectAsStateWithLifecycle()
-            val isLocked by viewModel.isLocked.collectAsStateWithLifecycle()
-            val shouldKeepScreenOn by viewModel.shouldKeepScreenOn.collectAsStateWithLifecycle()
+            val currentTheme by settingsViewModel.theme.collectAsStateWithLifecycle()
+            val isLocked by dashboardViewModel.isLocked.collectAsStateWithLifecycle()
+            val shouldKeepScreenOn by dashboardViewModel.shouldKeepScreenOn.collectAsStateWithLifecycle()
             
             val view = LocalView.current
             if (!view.isInEditMode) {
@@ -141,7 +156,7 @@ class MainActivity : ComponentActivity() {
                     if (isLocked) {
                         LockedScreen()
                     } else {
-                        PCDashboardApp(viewModel)
+                        PCDashboardApp(dashboardViewModel, settingsViewModel)
                     }
                 }
             }
@@ -159,18 +174,31 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun PCDashboardApp(viewModel: DashboardViewModel) {
+fun PCDashboardApp(
+    dashboardViewModel: DashboardViewModel,
+    settingsViewModel: SettingsViewModel
+) {
     val navController = rememberNavController()
     
     var currentNotification by remember { mutableStateOf<PcNotification?>(null) }
     var notificationVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(viewModel.notifications) {
-        viewModel.notifications.collectLatest { notification ->
+    val respectExpireTimeout by settingsViewModel.respectExpireTimeout.collectAsStateWithLifecycle()
+    val notificationTimeout by settingsViewModel.notificationTimeout.collectAsStateWithLifecycle()
+
+    LaunchedEffect(dashboardViewModel.notifications, respectExpireTimeout, notificationTimeout) {
+        dashboardViewModel.notifications.collectLatest { notification ->
             Log.d("PERF_LATENCY", "UI_RECV_NOTIFICATION id=${notification.id} ts=${System.currentTimeMillis()}")
             currentNotification = notification
             notificationVisible = true
-            delay(5000)
+            
+            val displayMs = if (respectExpireTimeout && notification.expireTimeout > 0) {
+                notification.expireTimeout.toLong()
+            } else {
+                notificationTimeout.toLong() * 1000
+            }
+            
+            delay(displayMs)
             notificationVisible = false
             delay(500)
             currentNotification = null
@@ -181,13 +209,26 @@ fun PCDashboardApp(viewModel: DashboardViewModel) {
         NavHost(navController = navController, startDestination = "dashboard") {
             composable("dashboard") {
                 DashboardScreen(
-                    viewModel = viewModel,
+                    viewModel = dashboardViewModel,
                     onSettingsClick = { navController.navigate("settings") }
                 )
             }
             composable("settings") {
-                SettingsScreen(
-                    viewModel = viewModel,
+                SettingsMainScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onThemeClick = { navController.navigate("settings/theme") },
+                    onNotificationsClick = { navController.navigate("settings/notifications") }
+                )
+            }
+            composable("settings/theme") {
+                ThemeSettingsScreen(
+                    viewModel = settingsViewModel,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+            composable("settings/notifications") {
+                NotificationSettingsScreen(
+                    viewModel = settingsViewModel,
                     onBackClick = { navController.popBackStack() }
                 )
             }
@@ -198,7 +239,7 @@ fun PCDashboardApp(viewModel: DashboardViewModel) {
                 notification = notification,
                 visible = notificationVisible,
                 onActionClick = { actionKey ->
-                    viewModel.onNotificationAction(notification.id, actionKey)
+                    dashboardViewModel.onNotificationAction(notification.id, actionKey)
                     notificationVisible = false
                 }
             )

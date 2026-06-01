@@ -80,7 +80,8 @@ data class PcNotification(
     val summary: String,
     val body: String,
     val actions: List<String>,
-    val timestamp: Long
+    val timestamp: Long,
+    val expireTimeout: Int = -1
 )
 
 /**
@@ -293,7 +294,8 @@ fun NotificationMessage.toDomain(): PcNotification {
         summary = data.summary,
         body = data.body,
         actions = data.actions,
-        timestamp = timestamp
+        timestamp = timestamp,
+        expireTimeout = data.expireTimeout
     )
 }
 
