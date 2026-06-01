@@ -1,5 +1,6 @@
 package com.noosxe.pc_dashboard.data
 
+import android.util.Base64
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
@@ -31,14 +32,42 @@ data class PlayerState(
     val player: String = "",
     val identity: String = "",
     val desktopEntry: String = "",
+    val trackId: String = "",
     val title: String = "",
     val artist: String = "",
+    val album: String = "",
     val status: String = "Stopped",
     val positionMs: Long = 0,
     val lengthMs: Long = 0,
     val volume: Double = 0.0,
-    val artUrl: String = ""
-)
+    val artUrl: String = "",
+    val artBytes: ByteArray? = null
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as PlayerState
+        if (player != other.player) return false
+        if (trackId != other.trackId) return false
+        if (title != other.title) return false
+        if (artist != other.artist) return false
+        if (album != other.album) return false
+        if (status != other.status) return false
+        if (!artBytes.contentEquals(other.artBytes)) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = player.hashCode()
+        result = 31 * result + trackId.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + artist.hashCode()
+        result = 31 * result + album.hashCode()
+        result = 31 * result + status.hashCode()
+        result = 31 * result + (artBytes?.contentHashCode() ?: 0)
+        return result
+    }
+}
 
 data class PcNotification(
     val id: Int,
@@ -257,7 +286,7 @@ fun NotificationMessage.toDomain(): PcNotification {
         id = data.id,
         appName = data.appName,
         appIcon = data.appIcon,
-        appIconBase64 = data.appIconBase64,
+        appIconBase64 = data.appIconBase64?.ensureImageProtocol(),
         summary = data.summary,
         body = data.body,
         actions = data.actions,
@@ -268,18 +297,65 @@ fun NotificationMessage.toDomain(): PcNotification {
 fun MediaMessage.toDomain(): MediaState {
     return MediaState(
         players = data.activePlayers.map { player ->
+            val artUrl = player.metadata.artUrl.ensureImageProtocol()
+            val artBytes = if (artUrl.startsWith("data:", ignoreCase = true)) {
+                try {
+                    val base64Data = artUrl.substringAfter("base64,")
+                    Base64.decode(base64Data, Base64.DEFAULT)
+                } catch (e: Exception) {
+                    null
+                }
+            } else null
+
             PlayerState(
                 player = player.playerName,
                 identity = player.identity ?: player.playerName,
                 desktopEntry = player.desktopEntry ?: "",
+                trackId = player.metadata.trackId,
                 title = player.metadata.title,
                 artist = player.metadata.artist.joinToString(", "),
+                album = player.metadata.album,
                 status = player.playbackStatus,
                 positionMs = player.positionMicroseconds / 1000,
                 lengthMs = player.metadata.lengthMicroseconds / 1000,
                 volume = player.volume,
-                artUrl = player.metadata.artUrl
+                artUrl = artUrl,
+                artBytes = artBytes
             )
         }
     )
+}
+
+/**
+ * Ensures an image string (URL, path, or base64) is in a format Coil can handle.
+ */
+private fun String.ensureImageProtocol(): String {
+    val trimmed = this.trim()
+    if (trimmed.isBlank()) return trimmed
+    
+    // Remove newlines and carriage returns which often break URI parsing
+    // We also remove literal "\n" strings if they were double-escaped in JSON
+    var clean = trimmed.replace("\n", "")
+        .replace("\r", "")
+        .replace("\\n", "")
+        .replace("\\r", "")
+
+    // If it's a data URI, it must not have any internal whitespace
+    if (clean.startsWith("data:", ignoreCase = true)) {
+        clean = clean.replace(" ", "").replace("\t", "")
+        return clean
+    }
+
+    if (clean.startsWith("http://", ignoreCase = true) || 
+        clean.startsWith("https://", ignoreCase = true) || 
+        clean.startsWith("file://", ignoreCase = true) || 
+        clean.startsWith("/") || 
+        clean.startsWith("content://", ignoreCase = true)) {
+        return clean
+    }
+    
+    // If it doesn't have a protocol and isn't a local path, assume it's raw base64.
+    // Raw base64 should also have no whitespaces.
+    val noWhitespaces = clean.replace(" ", "").replace("\t", "")
+    return "data:image/png;base64,$noWhitespaces"
 }

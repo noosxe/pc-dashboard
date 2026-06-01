@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -71,6 +72,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.noosxe.pc_dashboard.data.PcNotification
 import com.noosxe.pc_dashboard.data.PlayerState
 import com.noosxe.pc_dashboard.service.PcStatsService
@@ -426,15 +428,34 @@ fun MediaControlCard(playerState: PlayerState, onCommand: (String) -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (playerState.artUrl.isNotBlank()) {
-                    AsyncImage(
-                        model = playerState.artUrl,
-                        contentDescription = "Album Art",
+                if (playerState.artBytes != null || playerState.artUrl.isNotBlank()) {
+                    Box(
                         modifier = Modifier
                             .size(64.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+                            .clip(RoundedCornerShape(8.dp))
+                    ) {
+                        val cacheKey = remember(playerState.trackId, playerState.title, playerState.artist) {
+                            val raw = "${playerState.trackId}|${playerState.title}|${playerState.artist}"
+                            // Use a simple hash for the cache key to keep it clean
+                            raw.hashCode().toString()
+                        }
+
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(playerState.artBytes ?: playerState.artUrl)
+                                .crossfade(true)
+                                .size(512, 512)
+                                .diskCacheKey(cacheKey)
+                                .memoryCacheKey(cacheKey)
+                                .build(),
+                            contentDescription = "Album Art",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                            onLoading = { Log.d("MediaArt", "Loading art for ${playerState.title}") },
+                            onSuccess = { Log.d("MediaArt", "Successfully loaded art for ${playerState.title}") },
+                            onError = { Log.e("MediaArt", "Failed to load art for ${playerState.title}: ${it.result.throwable.message}") }
+                        )
+                    }
                 } else {
                     Surface(
                         modifier = Modifier
