@@ -16,6 +16,7 @@ composeBom = "2026.02.01"
 kotlinxCoroutines = "1.11.0"
 turbine = "1.2.1"
 coil = "2.7.0"
+composeIcons = "2.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +42,7 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+compose-icons-simple = { group = "com.github.joaocsousa", name = "simple-icons", version.ref = "composeIcons" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

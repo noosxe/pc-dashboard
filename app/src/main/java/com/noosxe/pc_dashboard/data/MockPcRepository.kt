@@ -29,9 +29,11 @@ class MockPcRepository : PcRepository {
             PcNotification(
                 id = 1,
                 appName = "Slack",
+                appIcon = "slack",
+                appIconBase64 = null,
                 summary = "New message from Alice",
                 body = "Hey, are you free for a call?",
-                actions = listOf("default", "Activate"),
+                actions = listOf("default", "Activate", "dismiss", "Dismiss"),
                 timestamp = System.currentTimeMillis() / 1000
             )
         )
@@ -40,6 +42,8 @@ class MockPcRepository : PcRepository {
             PcNotification(
                 id = 2,
                 appName = "System",
+                appIcon = "system-software-update",
+                appIconBase64 = null,
                 summary = "Update available",
                 body = "A new system update is ready to install.",
                 actions = emptyList(),
@@ -64,6 +68,14 @@ class MockPcRepository : PcRepository {
     }
 
     override fun sendMediaCommand(player: String, command: String) {
+        // No-op for mock
+    }
+
+    override fun sendNotificationAction(notificationId: Int, actionKey: String) {
+        // No-op for mock
+    }
+
+    override fun dismissNotification(notificationId: Int) {
         // No-op for mock
     }
 }

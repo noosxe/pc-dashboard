@@ -94,5 +94,7 @@ class DashboardViewModelTest {
         override fun getMediaStateFlow(): Flow<MediaState> = mediaStateFlow
         override fun getCommandResponsesFlow(): Flow<String> = flowOf()
         override fun sendMediaCommand(player: String, command: String) {}
+        override fun sendNotificationAction(notificationId: Int, actionKey: String) {}
+        override fun dismissNotification(notificationId: Int) {}
     }
 }

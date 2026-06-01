@@ -9,4 +9,6 @@ interface PcRepository {
     fun getMediaStateFlow(): Flow<MediaState>
     fun getCommandResponsesFlow(): Flow<String>
     fun sendMediaCommand(player: String, command: String)
+    fun sendNotificationAction(notificationId: Int, actionKey: String)
+    fun dismissNotification(notificationId: Int)
 }

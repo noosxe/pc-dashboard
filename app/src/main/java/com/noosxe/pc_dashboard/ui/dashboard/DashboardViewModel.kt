@@ -96,4 +96,13 @@ class DashboardViewModel(
     fun onMediaCommand(player: String, command: String) {
         pcRepository.sendMediaCommand(player, command)
     }
+
+    fun onNotificationAction(notificationId: Int, actionKey: String) {
+        pcRepository.sendNotificationAction(notificationId, actionKey)
+    }
+
+    fun onNotificationDismiss(notificationId: Int) {
+        pcRepository.sendNotificationAction(notificationId, "dismiss") // Protocol says 'dismiss' is a common action key
+        pcRepository.dismissNotification(notificationId)
+    }
 }

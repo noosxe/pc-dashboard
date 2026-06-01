@@ -43,6 +43,8 @@ data class PlayerState(
 data class PcNotification(
     val id: Int,
     val appName: String,
+    val appIcon: String,
+    val appIconBase64: String? = null,
     val summary: String,
     val body: String,
     val actions: List<String>,
@@ -169,14 +171,29 @@ data class RamStatsDto(
 
 @Serializable
 data class NotificationDataDto(
+    val id: Int = 0,
     @SerialName("app_name") val appName: String,
     @SerialName("replaces_id") val replacesId: Int,
     @SerialName("app_icon") val appIcon: String,
+    @SerialName("app_icon_base64") val appIconBase64: String? = null,
     val summary: String,
     val body: String,
     val actions: List<String>,
     val hints: JsonElement,
     @SerialName("expire_timeout") val expireTimeout: Int
+)
+
+@Serializable
+data class NotificationActionRequest(
+    val type: String = "notification_action_command",
+    @SerialName("notification_id") val notificationId: Int,
+    @SerialName("action_key") val actionKey: String
+)
+
+@Serializable
+data class NotificationDismissRequest(
+    val type: String = "notification_dismiss_command",
+    @SerialName("notification_id") val notificationId: Int
 )
 
 @Serializable
@@ -237,8 +254,10 @@ fun TelemetryMessage.toDomain(): PcStats {
 
 fun NotificationMessage.toDomain(): PcNotification {
     return PcNotification(
-        id = data.replacesId,
+        id = data.id,
         appName = data.appName,
+        appIcon = data.appIcon,
+        appIconBase64 = data.appIconBase64,
         summary = data.summary,
         body = data.body,
         actions = data.actions,
