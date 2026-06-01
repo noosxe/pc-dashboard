@@ -53,6 +53,10 @@ data class PlayerState(
         if (artist != other.artist) return false
         if (album != other.album) return false
         if (status != other.status) return false
+        if (positionMs != other.positionMs) return false
+        if (lengthMs != other.lengthMs) return false
+        if (volume != other.volume) return false
+        if (artUrl != other.artUrl) return false
         if (!artBytes.contentEquals(other.artBytes)) return false
         return true
     }
@@ -64,6 +68,10 @@ data class PlayerState(
         result = 31 * result + artist.hashCode()
         result = 31 * result + album.hashCode()
         result = 31 * result + status.hashCode()
+        result = 31 * result + positionMs.hashCode()
+        result = 31 * result + lengthMs.hashCode()
+        result = 31 * result + volume.hashCode()
+        result = 31 * result + artUrl.hashCode()
         result = 31 * result + (artBytes?.contentHashCode() ?: 0)
         return result
     }

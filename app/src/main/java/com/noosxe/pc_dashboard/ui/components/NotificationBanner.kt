@@ -37,6 +37,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.noosxe.pc_dashboard.data.PcNotification
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import android.util.Log
+
 @Composable
 fun NotificationBanner(
     notification: PcNotification,
@@ -44,6 +52,30 @@ fun NotificationBanner(
     onActionClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    LaunchedEffect(notification.id) {
+        Log.d("PERF_LATENCY", "UI_SHOW_NOTIFICATION id=${notification.id} ts=${System.currentTimeMillis()}")
+    }
+
+    var iconModel by remember(notification.id) { mutableStateOf<ByteArray?>(null) }
+    LaunchedEffect(notification.appIconBase64, visible) {
+        val base64 = notification.appIconBase64
+        if (visible && base64 != null && base64.isNotBlank()) {
+            withContext(Dispatchers.Default) {
+                val startTime = System.currentTimeMillis()
+                val decoded = try {
+                    val pureBase64 = base64.substringAfter("base64,")
+                    android.util.Base64.decode(pureBase64, android.util.Base64.DEFAULT)
+                } catch (_: Exception) {
+                    null
+                }
+                val duration = System.currentTimeMillis() - startTime
+                Log.d("PERF_LATENCY", "UI_DECODE_BASE64 id=${notification.id} duration=${duration}ms size=${base64.length}")
+                iconModel = decoded
+            }
+        } else {
+            iconModel = null
+        }
+    }
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -91,10 +123,10 @@ fun NotificationBanner(
                                 modifier = Modifier.size(28.dp),
                                 tint = Color.Unspecified // SimpleIcons are often colored or we use onSurfaceVariant
                             )
-                        } else if (!notification.appIconBase64.isNullOrBlank()) {
+                        } else if (iconModel != null) {
                             // Tier 2: Host-provided Base64
                             AsyncImage(
-                                model = notification.appIconBase64,
+                                model = iconModel,
                                 contentDescription = notification.appName,
                                 modifier = Modifier.fillMaxWidth()
                             )

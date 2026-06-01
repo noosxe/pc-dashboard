@@ -207,6 +207,7 @@ fun PCDashboardApp(viewModel: DashboardViewModel) {
 
     LaunchedEffect(viewModel.notifications) {
         viewModel.notifications.collectLatest { notification ->
+            Log.d("PERF_LATENCY", "UI_RECV_NOTIFICATION id=${notification.id} ts=${System.currentTimeMillis()}")
             currentNotification = notification
             notificationVisible = true
             delay(5000)
