@@ -35,9 +35,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.noosxe.pc_dashboard.data.PcNotification
+import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
 
 @Composable
 fun NotificationBanner(
@@ -74,19 +76,24 @@ fun NotificationBanner(
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // App Icon Resolution (Tier 1 & Tier 2)
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(56.dp)
                             .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        val simpleIcon = remember(notification.appIcon) {
-                            IconMapper.getSimpleIcon(notification.appIcon)
+                        val simpleIcon = remember(notification.appIcon, notification.appName) {
+                            val icon = IconMapper.getSimpleIcon(notification.appIcon)
+                                ?: IconMapper.getSimpleIcon(notification.appName)
+                            if (icon == null) {
+                                Log.d("IconMapper", "Failed to map icon: appIcon='${notification.appIcon}', appName='${notification.appName}'")
+                            }
+                            icon
                         }
 
                         if (simpleIcon != null) {
@@ -94,7 +101,7 @@ fun NotificationBanner(
                             Icon(
                                 imageVector = simpleIcon,
                                 contentDescription = notification.appName,
-                                modifier = Modifier.size(28.dp),
+                                modifier = Modifier.size(40.dp),
                                 tint = Color.Unspecified
                             )
                         } else if (notification.appIconBase64?.isNotBlank() == true) {
@@ -115,12 +122,12 @@ fun NotificationBanner(
                             // Fallback: Placeholder
                             Surface(
                                 color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.size(40.dp)
+                                modifier = Modifier.size(56.dp)
                             ) {
                                 Icon(
                                     Icons.Default.Notifications,
                                     contentDescription = null,
-                                    modifier = Modifier.padding(8.dp),
+                                    modifier = Modifier.padding(12.dp),
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
@@ -133,16 +140,16 @@ fun NotificationBanner(
                     ) {
                         Text(
                             text = notification.summary,
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            maxLines = 1,
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
                         if (notification.body.isNotBlank()) {
                             Text(
                                 text = notification.body,
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 1,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
@@ -171,7 +178,7 @@ fun NotificationBanner(
                             ) {
                                 Text(
                                     text = displayAction.second,
-                                    style = MaterialTheme.typography.labelLarge,
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -180,5 +187,25 @@ fun NotificationBanner(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@Composable
+fun NotificationBannerPreview() {
+    PCDashboardTheme {
+        NotificationBanner(
+            notification = PcNotification(
+                id = 1,
+                appName = "Discord",
+                summary = "New message from User",
+                body = "This is a notification body that might be quite long and should be readable.",
+                appIcon = "discord",
+                actions = listOf("reply", "Reply", "dismiss", "Dismiss"),
+                timestamp = System.currentTimeMillis()
+            ),
+            visible = true,
+            onActionClick = {}
+        )
     }
 }
