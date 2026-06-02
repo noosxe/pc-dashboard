@@ -98,16 +98,12 @@ fun NotificationBanner(
 
                         if (simpleIcon != null) {
                             // Tier 1: Local High-Fidelity Vector
-                            val isBrand = remember(notification.appIcon, notification.appName) {
-                                IconMapper.isBrandIcon(notification.appIcon) || 
-                                IconMapper.isBrandIcon(notification.appName)
-                            }
-                            
+                            // We apply the primary theme color to all bundled icons to ensure contrast
                             Icon(
                                 imageVector = simpleIcon,
                                 contentDescription = notification.appName,
                                 modifier = Modifier.size(40.dp),
-                                tint = if (isBrand) Color.Unspecified else MaterialTheme.colorScheme.primary
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         } else if (notification.appIconBase64?.isNotBlank() == true) {
                             // Tier 2: Host-provided Base64 (Coil 3 handles data URIs)

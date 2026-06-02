@@ -101,17 +101,4 @@ object IconMapper {
             else -> null
         }
     }
-
-    /**
-     * Returns true if the icon name corresponds to a brand icon (SimpleIcons)
-     * which should not be tinted.
-     */
-    fun isBrandIcon(iconName: String): Boolean {
-        val name = iconName.lowercase()
-        // Generic system icons that should be tinted
-        if (name == "power" || name == "power-profile") return false
-        
-        // If it's in our mapping and not generic, it's a brand icon
-        return getSimpleIcon(name) != null
-    }
 }
