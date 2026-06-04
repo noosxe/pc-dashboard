@@ -14,9 +14,11 @@ data class PcStats(
     val cpuUsage: Float = 0f,
     val cpuTemp: Float = 0f,
     val cpuFreq: Float = 0f,
+    val cpuPower: Float = 0f,
     val gpuUsage: Float = 0f,
     val gpuTemp: Float = 0f,
     val gpuFreq: Float = 0f,
+    val gpuPower: Float = 0f,
     val ramUsage: Float = 0f,
     val vramUsage: Float = 0f,
     val ramTotal: Float = 16f, // GB
@@ -202,7 +204,8 @@ data class TelemetryData(
 data class CpuStatsDto(
     @SerialName("usage_percent") val usagePercent: Float,
     @SerialName("temp_celsius") val tempCelsius: Float,
-    @SerialName("freq_mhz") val frequencyMhz: Float = 0f
+    @SerialName("freq_mhz") val frequencyMhz: Float = 0f,
+    @SerialName("power_watts") val powerWatts: Float = 0f
 )
 
 @Serializable
@@ -211,7 +214,8 @@ data class GpuStatsDto(
     @SerialName("temp_celsius") val tempCelsius: Float,
     @SerialName("freq_mhz") val frequencyMhz: Float = 0f,
     @SerialName("vram_used_bytes") val vramUsedBytes: Long,
-    @SerialName("vram_total_bytes") val vramTotalBytes: Long
+    @SerialName("vram_total_bytes") val vramTotalBytes: Long,
+    @SerialName("power_watts") val powerWatts: Float = 0f
 )
 
 @Serializable
@@ -295,9 +299,11 @@ fun TelemetryMessage.toDomain(): PcStats {
         cpuUsage = data.cpu.usagePercent,
         cpuTemp = data.cpu.tempCelsius,
         cpuFreq = data.cpu.frequencyMhz,
+        cpuPower = data.cpu.powerWatts,
         gpuUsage = data.gpu.usagePercent,
         gpuTemp = data.gpu.tempCelsius,
         gpuFreq = data.gpu.frequencyMhz,
+        gpuPower = data.gpu.powerWatts,
         ramUsage = data.ram.usedBytes / bytesToGb,
         ramTotal = data.ram.totalBytes / bytesToGb,
         vramUsage = data.gpu.vramUsedBytes / bytesToGb,
