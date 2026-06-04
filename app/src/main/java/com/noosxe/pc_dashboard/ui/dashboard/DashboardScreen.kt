@@ -79,6 +79,7 @@ fun DashboardScreen(
                     usage = stats.cpuUsage,
                     temp = stats.cpuTemp,
                     freq = stats.cpuFreq,
+                    power = stats.cpuPower,
                     modifier = Modifier.weight(1f),
                 )
                 StatCard(
@@ -86,6 +87,7 @@ fun DashboardScreen(
                     usage = stats.gpuUsage,
                     temp = stats.gpuTemp,
                     freq = stats.gpuFreq,
+                    power = stats.gpuPower,
                     modifier = Modifier.weight(1f),
                 )
             }

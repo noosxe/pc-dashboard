@@ -12,9 +12,11 @@ class MockPcRepository : PcRepository {
                 cpuUsage = Random.nextFloat() * 100,
                 cpuTemp = 30 + Random.nextFloat() * 50,
                 cpuFreq = 2000 + Random.nextFloat() * 3000,
+                cpuPower = 10 + Random.nextFloat() * 100,
                 gpuUsage = Random.nextFloat() * 100,
                 gpuTemp = 30 + Random.nextFloat() * 60,
                 gpuFreq = 500 + Random.nextFloat() * 1500,
+                gpuPower = 20 + Random.nextFloat() * 250,
                 ramUsage = Random.nextFloat() * 16,
                 vramUsage = Random.nextFloat() * 8
             )
