@@ -20,8 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.noosxe.pc_dashboard.data.PlayerState
+import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
 
 @Composable
 fun MediaControlCard(playerState: PlayerState, onCommand: (String) -> Unit) {
@@ -93,5 +95,41 @@ fun MediaControlCard(playerState: PlayerState, onCommand: (String) -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Normal Track")
+@Composable
+fun MediaControlCardPreview() {
+    PCDashboardTheme {
+        MediaControlCard(
+            playerState = PlayerState(
+                title = "Never Gonna Give You Up",
+                artist = "Rick Astley",
+                identity = "Spotify",
+                status = "Playing",
+                positionMs = 30000,
+                lengthMs = 213000
+            ),
+            onCommand = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Livestream")
+@Composable
+fun MediaControlCardLivestreamPreview() {
+    PCDashboardTheme {
+        MediaControlCard(
+            playerState = PlayerState(
+                title = "Lofi Hip Hop Radio",
+                artist = "Lofi Girl",
+                identity = "YouTube",
+                status = "Playing",
+                positionMs = 0,
+                lengthMs = 0
+            ),
+            onCommand = {}
+        )
     }
 }
