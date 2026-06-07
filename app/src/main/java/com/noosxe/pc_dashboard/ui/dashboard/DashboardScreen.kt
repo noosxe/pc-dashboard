@@ -104,6 +104,8 @@ fun DashboardScreen(
                         secondaryChartColor = Color(0xFFFF7043),
                         secondaryMax = 100f,
                         secondaryLabel = "°C",
+                        bottomLeftValue = "${stats.cpuFreq.toInt()} MHz",
+                        bottomRightValue = "${stats.cpuPower.toInt()} W",
                         modifier = Modifier.weight(1f)
                     )
                     SmartStatCard(
@@ -118,6 +120,8 @@ fun DashboardScreen(
                         secondaryChartColor = Color(0xFFFF7043),
                         secondaryMax = 100f,
                         secondaryLabel = "°C",
+                        bottomLeftValue = "${stats.gpuFreq.toInt()} MHz",
+                        bottomRightValue = "${stats.gpuPower.toInt()} W",
                         modifier = Modifier.weight(1f)
                     )
                     SmartStatCard(
@@ -200,6 +204,8 @@ fun DashboardScreen(
                         secondaryChartColor = Color(0xFFFF7043),
                         secondaryMax = 100f,
                         secondaryLabel = "°C",
+                        bottomLeftValue = "${stats.cpuFreq.toInt()} MHz",
+                        bottomRightValue = "${stats.cpuPower.toInt()} W",
                         modifier = Modifier.weight(1f)
                     )
                     SmartStatCard(
@@ -214,6 +220,8 @@ fun DashboardScreen(
                         secondaryChartColor = Color(0xFFFF7043),
                         secondaryMax = 100f,
                         secondaryLabel = "°C",
+                        bottomLeftValue = "${stats.gpuFreq.toInt()} MHz",
+                        bottomRightValue = "${stats.gpuPower.toInt()} W",
                         modifier = Modifier.weight(1f)
                     )
                 }
