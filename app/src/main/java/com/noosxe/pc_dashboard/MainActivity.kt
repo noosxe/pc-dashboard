@@ -41,6 +41,7 @@ import com.noosxe.pc_dashboard.ui.components.NotificationBanner
 import com.noosxe.pc_dashboard.ui.dashboard.DashboardScreen
 import com.noosxe.pc_dashboard.ui.dashboard.DashboardViewModel
 import com.noosxe.pc_dashboard.ui.dashboard.LockedScreen
+import com.noosxe.pc_dashboard.ui.settings.AboutScreen
 import com.noosxe.pc_dashboard.ui.settings.NotificationSettingsScreen
 import com.noosxe.pc_dashboard.ui.settings.SettingsMainScreen
 import com.noosxe.pc_dashboard.ui.settings.ThemeSettingsScreen
@@ -217,7 +218,8 @@ fun PCDashboardApp(
                 SettingsMainScreen(
                     onBackClick = { navController.popBackStack() },
                     onThemeClick = { navController.navigate("settings/theme") },
-                    onNotificationsClick = { navController.navigate("settings/notifications") }
+                    onNotificationsClick = { navController.navigate("settings/notifications") },
+                    onAboutClick = { navController.navigate("settings/about") }
                 )
             }
             composable("settings/theme") {
@@ -229,6 +231,11 @@ fun PCDashboardApp(
             composable("settings/notifications") {
                 NotificationSettingsScreen(
                     viewModel = settingsViewModel,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+            composable("settings/about") {
+                AboutScreen(
                     onBackClick = { navController.popBackStack() }
                 )
             }

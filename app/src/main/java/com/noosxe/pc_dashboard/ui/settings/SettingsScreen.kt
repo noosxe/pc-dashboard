@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +50,7 @@ fun SettingsMainScreen(
     onBackClick: () -> Unit,
     onThemeClick: () -> Unit,
     onNotificationsClick: () -> Unit,
+    onAboutClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -87,6 +89,19 @@ fun SettingsMainScreen(
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
                     },
                     modifier = Modifier.clickable(onClick = onNotificationsClick)
+                )
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("About") },
+                    supportingContent = { Text("App information and version") },
+                    leadingContent = {
+                        Icon(Icons.Default.Info, contentDescription = null)
+                    },
+                    trailingContent = {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                    },
+                    modifier = Modifier.clickable(onClick = onAboutClick)
                 )
             }
         }

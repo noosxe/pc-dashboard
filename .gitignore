@@ -16,3 +16,4 @@
 .cxx
 /docs
 .artifacts/
+.kotlin/

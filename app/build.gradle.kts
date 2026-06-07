@@ -4,6 +4,28 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+fun getGitHash(): String {
+    return try {
+        val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+            .start()
+        process.waitFor()
+        process.inputStream.bufferedReader().readText().trim()
+    } catch (e: Exception) {
+        "unknown"
+    }
+}
+
+fun getLatestTag(): String {
+    return try {
+        val process = ProcessBuilder("sh", "-c", "git tag -l 'v*.*.*' '*.*.*' --sort=-v:refname | head -n 1")
+            .start()
+        process.waitFor()
+        process.inputStream.bufferedReader().readText().trim().ifEmpty { "unknown" }
+    } catch (e: Exception) {
+        "unknown"
+    }
+}
+
 android {
     namespace = "com.noosxe.pc_dashboard"
     compileSdk {
@@ -22,6 +44,9 @@ android {
         }
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "GIT_COMMIT_HASH", "\"${getGitHash()}\"")
+        buildConfigField("String", "VERSION_TAG", "\"${getLatestTag()}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
