@@ -4,11 +4,14 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -35,10 +38,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.noosxe.pc_dashboard.data.MediaState
+import com.noosxe.pc_dashboard.data.PcNotification
+import com.noosxe.pc_dashboard.data.PcRepository
+import com.noosxe.pc_dashboard.data.PcStats
 import com.noosxe.pc_dashboard.ui.components.DigitalClock
 import com.noosxe.pc_dashboard.ui.components.MediaControlCard
 import com.noosxe.pc_dashboard.ui.dashboard.components.SmartStatCard
 import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,10 +82,12 @@ fun DashboardScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (isLandscape) {
+                // First row: CPU, GPU, RAM, VRAM
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -128,6 +140,48 @@ fun DashboardScreen(
                         mainLabel = "GB",
                         modifier = Modifier.weight(1f)
                     )
+                }
+                
+                // Second row: Swap, zRAM, Spacers
+                if (stats.swapSupported || stats.zramSupported) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        if (stats.swapSupported) {
+                            SmartStatCard(
+                                title = "Swap",
+                                mainValue = "${stats.swapUsage.toInt()} GB",
+                                secondaryValue = "of ${stats.swapTotal.toInt()} GB",
+                                mainHistory = history.map { it.swapUsage },
+                                mainChartColor = Color(0xFF90A4AE),
+                                mainMax = stats.swapTotal.coerceAtLeast(1f),
+                                mainLabel = "GB",
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+
+                        if (stats.zramSupported) {
+                            SmartStatCard(
+                                title = "zRAM",
+                                mainValue = "${stats.zramUsed.toInt()} GB",
+                                secondaryValue = "Ratio: ${"%.2f".format(stats.zramCompressionRatio)}",
+                                mainHistory = history.map { it.zramUsed },
+                                mainChartColor = Color(0xFFD4E157),
+                                mainMax = stats.zramTotal.coerceAtLeast(1f),
+                                mainLabel = "GB",
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                        
+                        // Spacers to fill the remaining 2 slots of the 4-column row
+                        Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             } else {
                 Row(
@@ -188,6 +242,43 @@ fun DashboardScreen(
                         mainLabel = "GB",
                         modifier = Modifier.weight(1f)
                     )
+                }
+
+                if (stats.swapSupported || stats.zramSupported) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        if (stats.swapSupported) {
+                            SmartStatCard(
+                                title = "Swap",
+                                mainValue = "${stats.swapUsage.toInt()} GB",
+                                secondaryValue = "of ${stats.swapTotal.toInt()} GB",
+                                mainHistory = history.map { it.swapUsage },
+                                mainChartColor = Color(0xFF90A4AE),
+                                mainMax = stats.swapTotal.coerceAtLeast(1f),
+                                mainLabel = "GB",
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+
+                        if (stats.zramSupported) {
+                            SmartStatCard(
+                                title = "zRAM",
+                                mainValue = "${stats.zramUsed.toInt()} GB",
+                                secondaryValue = "Ratio: ${"%.2f".format(stats.zramCompressionRatio)}",
+                                mainHistory = history.map { it.zramUsed },
+                                mainChartColor = Color(0xFFD4E157),
+                                mainMax = stats.zramTotal.coerceAtLeast(1f),
+                                mainLabel = "GB",
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
                 }
             }
 
@@ -268,7 +359,101 @@ fun DashboardPreview() {
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
-                        return DashboardViewModel(com.noosxe.pc_dashboard.data.MockPcRepository()) as T
+                        val repo = object : PcRepository {
+                            override fun getPcStatsFlow(): Flow<PcStats> = flow {
+                                emit(PcStats(
+                                    cpuUsage = 25f,
+                                    cpuTemp = 50f,
+                                    ramUsage = 8f,
+                                    ramTotal = 16f,
+                                    gpuUsage = 40f,
+                                    gpuTemp = 60f,
+                                    vramUsage = 4f,
+                                    vramTotal = 8f,
+                                    swapUsage = 2f,
+                                    swapTotal = 8f,
+                                    zramUsed = 1f,
+                                    zramTotal = 4f,
+                                    zramCompressionRatio = 2.5f,
+                                    swapSupported = true,
+                                    zramSupported = true
+                                ))
+                            }
+                            override fun getNotificationsFlow(): Flow<PcNotification> = flow {}
+                            override fun getSessionLockFlow(): Flow<Boolean> = flow { emit(false) }
+                            override fun getPowerProfileFlow(): Flow<String> = flow { emit("balanced") }
+                            override fun getMediaStateFlow(): Flow<MediaState> = flow { emit(MediaState()) }
+                            override fun getCommandResponsesFlow(): Flow<String> = flow {}
+                            override fun sendMediaCommand(player: String, command: String) {}
+                            override fun sendNotificationAction(notificationId: Int, actionKey: String) {}
+                            override fun dismissNotification(notificationId: Int) {}
+                        }
+                        return DashboardViewModel(repo) as T
+                    }
+                }
+            ),
+        ) {}
+    }
+}
+
+@Preview(showBackground = true, widthDp = 1280, heightDp = 800)
+@Composable
+fun DashboardLandscapePreview() {
+    PCDashboardTheme {
+        DashboardScreen(
+            viewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        val repo = object : PcRepository {
+                            override fun getPcStatsFlow(): Flow<PcStats> = flow {
+                                emit(PcStats(
+                                    cpuUsage = 25f,
+                                    cpuTemp = 50f,
+                                    ramUsage = 8f,
+                                    ramTotal = 16f,
+                                    gpuUsage = 40f,
+                                    gpuTemp = 60f,
+                                    vramUsage = 4f,
+                                    vramTotal = 8f,
+                                    swapUsage = 2f,
+                                    swapTotal = 8f,
+                                    zramUsed = 1f,
+                                    zramTotal = 4f,
+                                    zramCompressionRatio = 2.5f,
+                                    swapSupported = true,
+                                    zramSupported = true
+                                ))
+                                // Emit again to trigger recomposition and show the cards
+                                delay(100)
+                                emit(PcStats(
+                                    cpuUsage = 26f,
+                                    cpuTemp = 51f,
+                                    ramUsage = 8.1f,
+                                    ramTotal = 16f,
+                                    gpuUsage = 41f,
+                                    gpuTemp = 61f,
+                                    vramUsage = 4.1f,
+                                    vramTotal = 8f,
+                                    swapUsage = 2.1f,
+                                    swapTotal = 8f,
+                                    zramUsed = 1.1f,
+                                    zramTotal = 4f,
+                                    zramCompressionRatio = 2.6f,
+                                    swapSupported = true,
+                                    zramSupported = true
+                                ))
+                            }
+                            override fun getNotificationsFlow(): Flow<PcNotification> = flow {}
+                            override fun getSessionLockFlow(): Flow<Boolean> = flow { emit(false) }
+                            override fun getPowerProfileFlow(): Flow<String> = flow { emit("balanced") }
+                            override fun getMediaStateFlow(): Flow<MediaState> = flow { emit(MediaState()) }
+                            override fun getCommandResponsesFlow(): Flow<String> = flow {}
+                            override fun sendMediaCommand(player: String, command: String) {}
+                            override fun sendNotificationAction(notificationId: Int, actionKey: String) {}
+                            override fun dismissNotification(notificationId: Int) {}
+                        }
+                        return DashboardViewModel(repo) as T
                     }
                 }
             ),

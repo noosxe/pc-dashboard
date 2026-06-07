@@ -18,7 +18,15 @@ class MockPcRepository : PcRepository {
                 gpuFreq = 500 + Random.nextFloat() * 1500,
                 gpuPower = 20 + Random.nextFloat() * 250,
                 ramUsage = Random.nextFloat() * 16,
-                vramUsage = Random.nextFloat() * 8
+                vramUsage = Random.nextFloat() * 8,
+                swapUsage = Random.nextFloat() * 4,
+                swapTotal = 8f,
+                swapPercentage = (Random.nextFloat() * 4 / 8f) * 100f,
+                zramUsed = Random.nextFloat() * 2,
+                zramTotal = 4f,
+                zramCompressionRatio = 2.0f + Random.nextFloat() * 1.5f,
+                swapSupported = true,
+                zramSupported = true
             )
             emit(stats)
             delay(1000) // Update every second
