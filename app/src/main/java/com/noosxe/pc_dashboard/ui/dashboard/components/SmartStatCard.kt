@@ -1,6 +1,7 @@
 package com.noosxe.pc_dashboard.ui.dashboard.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,7 +38,9 @@ fun SmartStatCard(
     secondaryHistory: List<Float>? = null,
     secondaryChartColor: Color? = null,
     secondaryMax: Float? = null,
-    secondaryLabel: String? = null
+    secondaryLabel: String? = null,
+    bottomLeftValue: String? = null,
+    bottomRightValue: String? = null
 ) {
     Card(
         modifier = modifier.aspectRatio(1f)
@@ -120,6 +123,44 @@ fun SmartStatCard(
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                }
+
+                if (bottomLeftValue != null || bottomRightValue != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        if (bottomLeftValue != null) {
+                            Text(
+                                text = bottomLeftValue,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    shadow = Shadow(
+                                        color = Color.Black.copy(alpha = 0.5f),
+                                        offset = Offset(1f, 1f),
+                                        blurRadius = 2f
+                                    )
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.size(1.dp))
+                        }
+
+                        if (bottomRightValue != null) {
+                            Text(
+                                text = bottomRightValue,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    shadow = Shadow(
+                                        color = Color.Black.copy(alpha = 0.5f),
+                                        offset = Offset(1f, 1f),
+                                        blurRadius = 2f
+                                    )
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                            )
+                        }
                     }
                 }
             }
