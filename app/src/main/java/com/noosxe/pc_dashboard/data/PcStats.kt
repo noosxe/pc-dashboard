@@ -22,7 +22,15 @@ data class PcStats(
     val ramUsage: Float = 0f,
     val vramUsage: Float = 0f,
     val ramTotal: Float = 16f, // GB
-    val vramTotal: Float = 8f  // GB
+    val vramTotal: Float = 8f,  // GB
+    val swapUsage: Float = 0f,
+    val swapTotal: Float = 0f,
+    val swapPercentage: Float = 0f,
+    val zramUsed: Float = 0f,
+    val zramTotal: Float = 0f,
+    val zramCompressionRatio: Float = 0f,
+    val swapSupported: Boolean = false,
+    val zramSupported: Boolean = false
 )
 
 data class MediaState(
@@ -197,7 +205,30 @@ data class PowerProfileDto(
 data class TelemetryData(
     val cpu: CpuStatsDto,
     val gpu: GpuStatsDto,
-    val ram: RamStatsDto
+    val ram: RamStatsDto,
+    val swap: SwapStatsDto? = null,
+    val zram: ZramStatsDto? = null,
+    val flags: TelemetryFlagsDto? = null
+)
+
+@Serializable
+data class SwapStatsDto(
+    @SerialName("used_bytes") val usedBytes: Long,
+    @SerialName("total_bytes") val totalBytes: Long,
+    val percentage: Float
+)
+
+@Serializable
+data class ZramStatsDto(
+    @SerialName("mem_used_total_bytes") val usedBytes: Long,
+    @SerialName("total_bytes") val totalBytes: Long,
+    @SerialName("compression_ratio") val compressionRatio: Float
+)
+
+@Serializable
+data class TelemetryFlagsDto(
+    @SerialName("swap_supported") val swapSupported: Boolean = false,
+    @SerialName("zram_supported") val zramSupported: Boolean = false
 )
 
 @Serializable
@@ -307,7 +338,15 @@ fun TelemetryMessage.toDomain(): PcStats {
         ramUsage = data.ram.usedBytes / bytesToGb,
         ramTotal = data.ram.totalBytes / bytesToGb,
         vramUsage = data.gpu.vramUsedBytes / bytesToGb,
-        vramTotal = data.gpu.vramTotalBytes / bytesToGb
+        vramTotal = data.gpu.vramTotalBytes / bytesToGb,
+        swapUsage = (data.swap?.usedBytes ?: 0L) / bytesToGb,
+        swapTotal = (data.swap?.totalBytes ?: 0L) / bytesToGb,
+        swapPercentage = data.swap?.percentage ?: 0f,
+        zramUsed = (data.zram?.usedBytes ?: 0L) / bytesToGb,
+        zramTotal = (data.zram?.totalBytes ?: 0L) / bytesToGb,
+        zramCompressionRatio = data.zram?.compressionRatio ?: 0f,
+        swapSupported = data.flags?.swapSupported ?: (data.swap != null),
+        zramSupported = data.flags?.zramSupported ?: (data.zram != null)
     )
 }
 
