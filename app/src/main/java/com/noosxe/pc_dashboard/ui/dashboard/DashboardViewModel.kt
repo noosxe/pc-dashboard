@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 
 class DashboardViewModel(
@@ -29,6 +30,16 @@ class DashboardViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = PcStats()
+        )
+
+    val statsHistory: StateFlow<List<PcStats>> = pcRepository.getPcStatsFlow()
+        .scan(emptyList<PcStats>()) { acc, value ->
+            (acc + value).takeLast(60)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
         )
 
     val isLocked: StateFlow<Boolean> = pcRepository.getSessionLockFlow()

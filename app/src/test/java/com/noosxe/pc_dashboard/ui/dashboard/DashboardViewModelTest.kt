@@ -100,12 +100,37 @@ class DashboardViewModelTest {
         }
     }
 
+    @Test
+    fun `statsHistory should accumulate up to 60 data points`() = runTest {
+        val statsFlow = MutableSharedFlow<PcStats>()
+        val repository = FakePcRepository(statsFlow = statsFlow)
+        val viewModel = DashboardViewModel(repository)
+
+        viewModel.statsHistory.test {
+            // Initial empty list
+            assertEquals(emptyList<PcStats>(), awaitItem())
+
+            // Emit 70 stats
+            for (i in 1..70) {
+                statsFlow.emit(PcStats(cpuUsage = i.toFloat()))
+                scheduler.advanceUntilIdle()
+            }
+
+            // The StateFlow might skip intermediate items, but the last one should be a list of 60
+            val lastHistory = expectMostRecentItem()
+            assertEquals(60, lastHistory.size)
+            assertEquals(11f, lastHistory.first().cpuUsage)
+            assertEquals(70f, lastHistory.last().cpuUsage)
+        }
+    }
+
     private class FakePcRepository(
         private val sessionLockFlow: Flow<Boolean> = flowOf(false),
         private val mediaStateFlow: Flow<MediaState> = flowOf(MediaState()),
-        private val powerProfileFlow: Flow<String> = flowOf()
+        private val powerProfileFlow: Flow<String> = flowOf(),
+        private val statsFlow: Flow<PcStats> = flowOf(PcStats())
     ) : PcRepository {
-        override fun getPcStatsFlow(): Flow<PcStats> = flowOf(PcStats())
+        override fun getPcStatsFlow(): Flow<PcStats> = statsFlow
         override fun getNotificationsFlow(): Flow<PcNotification> = MutableSharedFlow()
         override fun getSessionLockFlow(): Flow<Boolean> = sessionLockFlow
         override fun getPowerProfileFlow(): Flow<String> = powerProfileFlow

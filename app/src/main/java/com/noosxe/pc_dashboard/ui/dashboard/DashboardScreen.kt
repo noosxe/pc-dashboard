@@ -1,5 +1,6 @@
 package com.noosxe.pc_dashboard.ui.dashboard
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -34,8 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.noosxe.pc_dashboard.ui.components.DigitalClock
 import com.noosxe.pc_dashboard.ui.components.MediaControlCard
-import com.noosxe.pc_dashboard.ui.dashboard.components.MemoryCard
-import com.noosxe.pc_dashboard.ui.dashboard.components.StatCard
+import com.noosxe.pc_dashboard.ui.dashboard.components.SmartStatCard
 import com.noosxe.pc_dashboard.ui.theme.PCDashboardTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,6 +47,9 @@ fun DashboardScreen(
     onSettingsClick: () -> Unit,
 ) {
     val stats by viewModel.uiState.collectAsStateWithLifecycle()
+    val history by viewModel.statsHistory.collectAsStateWithLifecycle()
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Scaffold(
         topBar = {
@@ -70,44 +75,120 @@ fun DashboardScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                StatCard(
-                    title = "CPU",
-                    usage = stats.cpuUsage,
-                    temp = stats.cpuTemp,
-                    freq = stats.cpuFreq,
-                    power = stats.cpuPower,
-                    modifier = Modifier.weight(1f),
-                )
-                StatCard(
-                    title = "GPU",
-                    usage = stats.gpuUsage,
-                    temp = stats.gpuTemp,
-                    freq = stats.gpuFreq,
-                    power = stats.gpuPower,
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            if (isLandscape) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SmartStatCard(
+                        title = "CPU",
+                        mainValue = "${stats.cpuUsage.toInt()}%",
+                        secondaryValue = "${stats.cpuTemp.toInt()}°C",
+                        mainHistory = history.map { it.cpuUsage },
+                        mainChartColor = Color(0xFF4FC3F7),
+                        mainMax = 100f,
+                        mainLabel = "%",
+                        secondaryHistory = history.map { it.cpuTemp },
+                        secondaryChartColor = Color(0xFFFF7043),
+                        secondaryMax = 100f,
+                        secondaryLabel = "°C",
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmartStatCard(
+                        title = "GPU",
+                        mainValue = "${stats.gpuUsage.toInt()}%",
+                        secondaryValue = "${stats.gpuTemp.toInt()}°C",
+                        mainHistory = history.map { it.gpuUsage },
+                        mainChartColor = Color(0xFF81C784),
+                        mainMax = 100f,
+                        mainLabel = "%",
+                        secondaryHistory = history.map { it.gpuTemp },
+                        secondaryChartColor = Color(0xFFFF7043),
+                        secondaryMax = 100f,
+                        secondaryLabel = "°C",
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmartStatCard(
+                        title = "RAM",
+                        mainValue = "${stats.ramUsage.toInt()} GB",
+                        secondaryValue = "of ${stats.ramTotal.toInt()} GB",
+                        mainHistory = history.map { it.ramUsage },
+                        mainChartColor = Color(0xFFFFB74D),
+                        mainMax = stats.ramTotal.coerceAtLeast(1f),
+                        mainLabel = "GB",
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmartStatCard(
+                        title = "VRAM",
+                        mainValue = "${stats.vramUsage.toInt()} GB",
+                        secondaryValue = "of ${stats.vramTotal.toInt()} GB",
+                        mainHistory = history.map { it.vramUsage },
+                        mainChartColor = Color(0xFFBA68C8),
+                        mainMax = stats.vramTotal.coerceAtLeast(1f),
+                        mainLabel = "GB",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    SmartStatCard(
+                        title = "CPU",
+                        mainValue = "${stats.cpuUsage.toInt()}%",
+                        secondaryValue = "${stats.cpuTemp.toInt()}°C",
+                        mainHistory = history.map { it.cpuUsage },
+                        mainChartColor = Color(0xFF4FC3F7),
+                        mainMax = 100f,
+                        mainLabel = "%",
+                        secondaryHistory = history.map { it.cpuTemp },
+                        secondaryChartColor = Color(0xFFFF7043),
+                        secondaryMax = 100f,
+                        secondaryLabel = "°C",
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmartStatCard(
+                        title = "GPU",
+                        mainValue = "${stats.gpuUsage.toInt()}%",
+                        secondaryValue = "${stats.gpuTemp.toInt()}°C",
+                        mainHistory = history.map { it.gpuUsage },
+                        mainChartColor = Color(0xFF81C784),
+                        mainMax = 100f,
+                        mainLabel = "%",
+                        secondaryHistory = history.map { it.gpuTemp },
+                        secondaryChartColor = Color(0xFFFF7043),
+                        secondaryMax = 100f,
+                        secondaryLabel = "°C",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                MemoryCard(
-                    title = "RAM",
-                    usage = stats.ramUsage,
-                    total = stats.ramTotal,
-                    modifier = Modifier.weight(1f),
-                )
-                MemoryCard(
-                    title = "VRAM",
-                    usage = stats.vramUsage,
-                    total = stats.vramTotal,
-                    modifier = Modifier.weight(1f),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    SmartStatCard(
+                        title = "RAM",
+                        mainValue = "${stats.ramUsage.toInt()} GB",
+                        secondaryValue = "of ${stats.ramTotal.toInt()} GB",
+                        mainHistory = history.map { it.ramUsage },
+                        mainChartColor = Color(0xFFFFB74D),
+                        mainMax = stats.ramTotal.coerceAtLeast(1f),
+                        mainLabel = "GB",
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmartStatCard(
+                        title = "VRAM",
+                        mainValue = "${stats.vramUsage.toInt()} GB",
+                        secondaryValue = "of ${stats.vramTotal.toInt()} GB",
+                        mainHistory = history.map { it.vramUsage },
+                        mainChartColor = Color(0xFFBA68C8),
+                        mainMax = stats.vramTotal.coerceAtLeast(1f),
+                        mainLabel = "GB",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
 
             MediaPager(viewModel = viewModel)
