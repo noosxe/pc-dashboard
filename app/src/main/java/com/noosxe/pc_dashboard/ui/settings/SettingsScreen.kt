@@ -9,11 +9,13 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.SettingsInputComponent
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -22,6 +24,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,6 +53,7 @@ fun NotificationSettingsContentPreview() {
 @Composable
 fun SettingsMainScreen(
     onBackClick: () -> Unit,
+    onNetworkingClick: () -> Unit,
     onThemeClick: () -> Unit,
     onNotificationsClick: () -> Unit,
     onAboutClick: () -> Unit,
@@ -65,6 +71,19 @@ fun SettingsMainScreen(
         },
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
+            item {
+                ListItem(
+                    headlineContent = { Text("Networking") },
+                    supportingContent = { Text("Configure server address and port") },
+                    leadingContent = {
+                        Icon(Icons.Default.SettingsInputComponent, contentDescription = null)
+                    },
+                    trailingContent = {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                    },
+                    modifier = Modifier.clickable(onClick = onNetworkingClick)
+                )
+            }
             item {
                 ListItem(
                     headlineContent = { Text("Theme") },
@@ -237,4 +256,88 @@ fun ThemeOption(
         },
         modifier = Modifier.clickable(onClick = onClick),
     )
+}
+
+@Composable
+fun NetworkingSettingsScreen(
+    viewModel: SettingsViewModel,
+    onBackClick: () -> Unit,
+) {
+    val serverHost by viewModel.serverHost.collectAsStateWithLifecycle()
+    val serverPort by viewModel.serverPort.collectAsStateWithLifecycle()
+
+    NetworkingSettingsContent(
+        serverHost = serverHost,
+        serverPort = serverPort,
+        onHostChange = { viewModel.setServerHost(it) },
+        onPortChange = { viewModel.setServerPort(it) },
+        onBackClick = onBackClick
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NetworkingSettingsContent(
+    serverHost: String,
+    serverPort: Int,
+    onHostChange: (String) -> Unit,
+    onPortChange: (Int) -> Unit,
+    onBackClick: () -> Unit,
+) {
+    var hostInput by remember(serverHost) { mutableStateOf(serverHost) }
+    var portInput by remember(serverPort) { mutableStateOf(serverPort.toString()) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Networking") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        LazyColumn(modifier = Modifier.padding(innerPadding).padding(horizontal = 16.dp)) {
+            item {
+                OutlinedTextField(
+                    value = hostInput,
+                    onValueChange = {
+                        hostInput = it
+                        if (it.isNotBlank()) {
+                            onHostChange(it)
+                        }
+                    },
+                    label = { Text("Server Host (IP or Hostname)") },
+                    modifier = Modifier.fillParentMaxWidth().padding(vertical = 8.dp),
+                    singleLine = true
+                )
+            }
+            item {
+                OutlinedTextField(
+                    value = portInput,
+                    onValueChange = {
+                        portInput = it
+                        it.toIntOrNull()?.let { port ->
+                            if (port in 1..65535) {
+                                onPortChange(port)
+                            }
+                        }
+                    },
+                    label = { Text("Server Port") },
+                    modifier = Modifier.fillParentMaxWidth().padding(vertical = 8.dp),
+                    singleLine = true
+                )
+            }
+            item {
+                Text(
+                    text = "The app will automatically reconnect when these settings are changed.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
+    }
 }

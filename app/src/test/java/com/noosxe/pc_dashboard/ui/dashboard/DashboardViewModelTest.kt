@@ -139,5 +139,6 @@ class DashboardViewModelTest {
         override fun sendMediaCommand(player: String, command: String) {}
         override fun sendNotificationAction(notificationId: Int, actionKey: String) {}
         override fun dismissNotification(notificationId: Int) {}
+        override fun updateConnectionSettings(host: String, port: Int) {}
     }
 }

@@ -7,10 +7,18 @@ import coil3.svg.SvgDecoder
 import com.noosxe.pc_dashboard.data.PcRepository
 import com.noosxe.pc_dashboard.data.SettingsRepository
 import com.noosxe.pc_dashboard.data.WebSocketPcRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
 class PCDashboardApplication : Application(), SingletonImageLoader.Factory {
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     // Centralized repository instances to be shared across the app
     lateinit var pcRepository: PcRepository
@@ -36,7 +44,15 @@ class PCDashboardApplication : Application(), SingletonImageLoader.Factory {
             .readTimeout(0, TimeUnit.SECONDS) // For WebSockets
             .build()
 
-        // Use the fixed local loopback address for the WebSocket server
-        pcRepository = WebSocketPcRepository(client = client, wsUrl = "ws://127.0.0.1:12345/ws")
+        // Initialize with default values or latest from settings
+        pcRepository = WebSocketPcRepository(client = client)
+
+        combine(settingsRepository.serverHost, settingsRepository.serverPort) { host, port ->
+            host to port
+        }
+        .onEach { (host, port) ->
+            pcRepository.updateConnectionSettings(host, port)
+        }
+        .launchIn(applicationScope)
     }
 }

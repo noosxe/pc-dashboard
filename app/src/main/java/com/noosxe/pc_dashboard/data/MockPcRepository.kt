@@ -119,4 +119,8 @@ class MockPcRepository : PcRepository {
     override fun dismissNotification(notificationId: Int) {
         // No-op for mock
     }
+
+    override fun updateConnectionSettings(host: String, port: Int) {
+        // No-op for mock
+    }
 }
