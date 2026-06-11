@@ -19,6 +19,8 @@ class SettingsRepository(private val context: Context) {
         val THEME = stringPreferencesKey("theme")
         val RESPECT_EXPIRE_TIMEOUT = booleanPreferencesKey("respect_expire_timeout")
         val NOTIFICATION_TIMEOUT = intPreferencesKey("notification_timeout")
+        val SERVER_HOST = stringPreferencesKey("server_host")
+        val SERVER_PORT = intPreferencesKey("server_port")
     }
 
     val theme: Flow<AppTheme> = context.dataStore.data.map { preferences ->
@@ -38,6 +40,14 @@ class SettingsRepository(private val context: Context) {
         preferences[PreferencesKeys.NOTIFICATION_TIMEOUT] ?: 8
     }
 
+    val serverHost: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.SERVER_HOST] ?: "127.0.0.1"
+    }
+
+    val serverPort: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.SERVER_PORT] ?: 12345
+    }
+
     suspend fun setTheme(theme: AppTheme) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.THEME] = theme.name
@@ -53,6 +63,18 @@ class SettingsRepository(private val context: Context) {
     suspend fun setNotificationTimeout(timeout: Int) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.NOTIFICATION_TIMEOUT] = timeout
+        }
+    }
+
+    suspend fun setServerHost(host: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SERVER_HOST] = host
+        }
+    }
+
+    suspend fun setServerPort(port: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SERVER_PORT] = port
         }
     }
 }

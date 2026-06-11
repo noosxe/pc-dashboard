@@ -19,6 +19,10 @@ class SettingsViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
     val notificationTimeout: StateFlow<Int> = settingsRepository.notificationTimeout
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 8)
+    val serverHost: StateFlow<String> = settingsRepository.serverHost
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "127.0.0.1")
+    val serverPort: StateFlow<Int> = settingsRepository.serverPort
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 12345)
 
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
@@ -35,6 +39,18 @@ class SettingsViewModel(
     fun setNotificationTimeout(timeout: Int) {
         viewModelScope.launch {
             settingsRepository.setNotificationTimeout(timeout)
+        }
+    }
+
+    fun setServerHost(host: String) {
+        viewModelScope.launch {
+            settingsRepository.setServerHost(host)
+        }
+    }
+
+    fun setServerPort(port: Int) {
+        viewModelScope.launch {
+            settingsRepository.setServerPort(port)
         }
     }
 }

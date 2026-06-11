@@ -42,6 +42,7 @@ import com.noosxe.pc_dashboard.ui.dashboard.DashboardScreen
 import com.noosxe.pc_dashboard.ui.dashboard.DashboardViewModel
 import com.noosxe.pc_dashboard.ui.dashboard.LockedScreen
 import com.noosxe.pc_dashboard.ui.settings.AboutScreen
+import com.noosxe.pc_dashboard.ui.settings.NetworkingSettingsScreen
 import com.noosxe.pc_dashboard.ui.settings.NotificationSettingsScreen
 import com.noosxe.pc_dashboard.ui.settings.SettingsMainScreen
 import com.noosxe.pc_dashboard.ui.settings.ThemeSettingsScreen
@@ -217,9 +218,16 @@ fun PCDashboardApp(
             composable("settings") {
                 SettingsMainScreen(
                     onBackClick = { navController.popBackStack() },
+                    onNetworkingClick = { navController.navigate("settings/networking") },
                     onThemeClick = { navController.navigate("settings/theme") },
                     onNotificationsClick = { navController.navigate("settings/notifications") },
                     onAboutClick = { navController.navigate("settings/about") }
+                )
+            }
+            composable("settings/networking") {
+                NetworkingSettingsScreen(
+                    viewModel = settingsViewModel,
+                    onBackClick = { navController.popBackStack() }
                 )
             }
             composable("settings/theme") {

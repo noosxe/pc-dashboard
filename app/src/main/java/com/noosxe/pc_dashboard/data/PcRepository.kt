@@ -12,4 +12,5 @@ interface PcRepository {
     fun sendMediaCommand(player: String, command: String)
     fun sendNotificationAction(notificationId: Int, actionKey: String)
     fun dismissNotification(notificationId: Int)
+    fun updateConnectionSettings(host: String, port: Int)
 }
