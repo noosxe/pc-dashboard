@@ -52,6 +52,10 @@ The project follows **MVVM** with a **Flow-based** unidirectional data flow and 
 
 To maintain a clean and stable repository, agents must adhere to the following workflow and quality standards:
 
+### 0. Environment & Tooling
+- **Nix Shell**: This project uses a Nix flake to manage all development dependencies, including the Android SDK and build tools. **AI agents must always run terminal commands inside the nix development shell** using `nix develop --command <command>` or by entering the shell. Dependencies are not available globally.
+- **Makefile**: A `Makefile` is provided for common tasks (`build`, `install`, `run`, etc.). Use it via the Nix shell (e.g., `nix develop --command make build`).
+
 ### 1. Git Workflow
 - **Branching Strategy**: 
     - **Never push directly to `main`**. It is a protected branch.

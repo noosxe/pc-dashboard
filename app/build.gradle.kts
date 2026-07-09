@@ -4,27 +4,13 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-fun getGitHash(): String {
-    return try {
-        val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
-            .start()
-        process.waitFor()
-        process.inputStream.bufferedReader().readText().trim()
-    } catch (e: Exception) {
-        "unknown"
-    }
-}
+val gitHash = providers.exec {
+    commandLine("git", "rev-parse", "--short", "HEAD")
+}.standardOutput.asText.map { it.trim() }.getOrElse("unknown")
 
-fun getLatestTag(): String {
-    return try {
-        val process = ProcessBuilder("sh", "-c", "git tag -l 'v*.*.*' '*.*.*' --sort=-v:refname | head -n 1")
-            .start()
-        process.waitFor()
-        process.inputStream.bufferedReader().readText().trim().ifEmpty { "unknown" }
-    } catch (e: Exception) {
-        "unknown"
-    }
-}
+val latestTag = providers.exec {
+    commandLine("sh", "-c", "git tag -l 'v*.*.*' '*.*.*' --sort=-v:refname | head -n 1")
+}.standardOutput.asText.map { it.trim().ifEmpty { "unknown" } }.getOrElse("unknown")
 
 android {
     namespace = "com.noosxe.pc_dashboard"
@@ -45,8 +31,8 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "GIT_COMMIT_HASH", "\"${getGitHash()}\"")
-        buildConfigField("String", "VERSION_TAG", "\"${getLatestTag()}\"")
+        buildConfigField("String", "GIT_COMMIT_HASH", "\"$gitHash\"")
+        buildConfigField("String", "VERSION_TAG", "\"$latestTag\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -60,8 +46,7 @@ android {
                 "proguard-rules.pro"
             )
             // Support dynamic signing config from command line for CI/CD
-            if (project.hasProperty("android.packageSigningConfigs.release.signingConfig") &&
-                project.property("android.packageSigningConfigs.release.signingConfig") == "debug") {
+            if (providers.gradleProperty("android.packageSigningConfigs.release.signingConfig").getOrNull() == "debug") {
                 signingConfig = signingConfigs.getByName("debug")
             }
         }

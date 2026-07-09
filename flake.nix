@@ -24,6 +24,7 @@
         sdkPkgs: with sdkPkgs; [
           cmdline-tools-latest
           build-tools-37-0-0
+          build-tools-36-0-0
           platform-tools
           platforms-android-37-0
           emulator
@@ -32,7 +33,11 @@
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = [ sdk ];
+        buildInputs = [
+          sdk
+          pkgs.gnumake
+          pkgs.openjdk17
+        ];
 
         shellHook = ''
           # 1. Create a local .android directory structure if it doesn't exist
