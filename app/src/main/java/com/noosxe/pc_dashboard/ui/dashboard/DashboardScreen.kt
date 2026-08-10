@@ -126,8 +126,8 @@ fun DashboardScreen(
                     )
                     SmartStatCard(
                         title = "RAM",
-                        mainValue = "${stats.ramUsage.toInt()} GB",
-                        secondaryValue = "of ${stats.ramTotal.toInt()} GB",
+                        mainValue = "%.1f GB".format(stats.ramUsage),
+                        secondaryValue = "of %.1f GB".format(stats.ramTotal),
                         mainHistory = history.map { it.ramUsage },
                         mainChartColor = Color(0xFFFFB74D),
                         mainMax = stats.ramTotal.coerceAtLeast(1f),
@@ -136,8 +136,8 @@ fun DashboardScreen(
                     )
                     SmartStatCard(
                         title = "VRAM",
-                        mainValue = "${stats.vramUsage.toInt()} GB",
-                        secondaryValue = "of ${stats.vramTotal.toInt()} GB",
+                        mainValue = "%.1f GB".format(stats.vramUsage),
+                        secondaryValue = "of %.1f GB".format(stats.vramTotal),
                         mainHistory = history.map { it.vramUsage },
                         mainChartColor = Color(0xFFBA68C8),
                         mainMax = stats.vramTotal.coerceAtLeast(1f),
@@ -155,8 +155,8 @@ fun DashboardScreen(
                         if (stats.swapSupported) {
                             SmartStatCard(
                                 title = "Swap",
-                                mainValue = "${stats.swapUsage.toInt()} GB",
-                                secondaryValue = "of ${stats.swapTotal.toInt()} GB",
+                                mainValue = "%.1f GB".format(stats.swapUsage),
+                                secondaryValue = "of %.1f GB".format(stats.swapTotal),
                                 mainHistory = history.map { it.swapUsage },
                                 mainChartColor = Color(0xFF90A4AE),
                                 mainMax = stats.swapTotal.coerceAtLeast(1f),
@@ -170,7 +170,7 @@ fun DashboardScreen(
                         if (stats.zramSupported) {
                             SmartStatCard(
                                 title = "zRAM",
-                                mainValue = "${stats.zramUsed.toInt()} GB",
+                                mainValue = "%.1f GB".format(stats.zramUsed),
                                 secondaryValue = "Ratio: ${"%.2f".format(stats.zramCompressionRatio)}",
                                 mainHistory = history.map { it.zramUsed },
                                 mainChartColor = Color(0xFFD4E157),
@@ -232,8 +232,8 @@ fun DashboardScreen(
                 ) {
                     SmartStatCard(
                         title = "RAM",
-                        mainValue = "${stats.ramUsage.toInt()} GB",
-                        secondaryValue = "of ${stats.ramTotal.toInt()} GB",
+                        mainValue = "%.1f GB".format(stats.ramUsage),
+                        secondaryValue = "of %.1f GB".format(stats.ramTotal),
                         mainHistory = history.map { it.ramUsage },
                         mainChartColor = Color(0xFFFFB74D),
                         mainMax = stats.ramTotal.coerceAtLeast(1f),
@@ -242,8 +242,8 @@ fun DashboardScreen(
                     )
                     SmartStatCard(
                         title = "VRAM",
-                        mainValue = "${stats.vramUsage.toInt()} GB",
-                        secondaryValue = "of ${stats.vramTotal.toInt()} GB",
+                        mainValue = "%.1f GB".format(stats.vramUsage),
+                        secondaryValue = "of %.1f GB".format(stats.vramTotal),
                         mainHistory = history.map { it.vramUsage },
                         mainChartColor = Color(0xFFBA68C8),
                         mainMax = stats.vramTotal.coerceAtLeast(1f),
@@ -260,8 +260,8 @@ fun DashboardScreen(
                         if (stats.swapSupported) {
                             SmartStatCard(
                                 title = "Swap",
-                                mainValue = "${stats.swapUsage.toInt()} GB",
-                                secondaryValue = "of ${stats.swapTotal.toInt()} GB",
+                                mainValue = "%.1f GB".format(stats.swapUsage),
+                                secondaryValue = "of %.1f GB".format(stats.swapTotal),
                                 mainHistory = history.map { it.swapUsage },
                                 mainChartColor = Color(0xFF90A4AE),
                                 mainMax = stats.swapTotal.coerceAtLeast(1f),
@@ -275,7 +275,7 @@ fun DashboardScreen(
                         if (stats.zramSupported) {
                             SmartStatCard(
                                 title = "zRAM",
-                                mainValue = "${stats.zramUsed.toInt()} GB",
+                                mainValue = "%.1f GB".format(stats.zramUsed),
                                 secondaryValue = "Ratio: ${"%.2f".format(stats.zramCompressionRatio)}",
                                 mainHistory = history.map { it.zramUsed },
                                 mainChartColor = Color(0xFFD4E157),
