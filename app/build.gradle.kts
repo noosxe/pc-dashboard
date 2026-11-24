@@ -16,7 +16,7 @@ android {
     namespace = "com.noosxe.pc_dashboard"
     compileSdk {
         version = release(37) {
-            minorApiLevel = 0
+            minorApiLevel = 1
         }
     }
 
